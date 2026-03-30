@@ -54,7 +54,7 @@ public partial class TelemedDbContext : DbContext
             entity.HasIndex(e => e.Email, "admin_email_key").IsUnique();
 
             entity.Property(e => e.Adminid).HasColumnName("adminid");
-            entity.Property(e => e.Createdat)
+            entity.Property(e => e.Createdate)
                 .HasDefaultValueSql("now()")
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("createdat");
@@ -79,7 +79,7 @@ public partial class TelemedDbContext : DbContext
             entity.ToTable("appointment");
 
             entity.Property(e => e.Appointmentid).HasColumnName("appointmentid");
-            entity.Property(e => e.Createdat)
+            entity.Property(e => e.Createdate)
                 .HasDefaultValueSql("now()")
                 .HasColumnName("createdat");
             entity.Property(e => e.Mode)
@@ -94,7 +94,7 @@ public partial class TelemedDbContext : DbContext
                 .HasMaxLength(20)
                 .HasDefaultValueSql("'Pending'::character varying")
                 .HasColumnName("status");
-            entity.Property(e => e.Updatedat).HasColumnName("updatedat");
+            entity.Property(e => e.Updatedate).HasColumnName("updatedat");
 
             entity.HasOne(d => d.Patient).WithMany(p => p.Appointments)
                 .HasForeignKey(d => d.Patientid)
@@ -114,7 +114,7 @@ public partial class TelemedDbContext : DbContext
             entity.Property(e => e.Encounterid).HasColumnName("encounterid");
             entity.Property(e => e.Appointmentid).HasColumnName("appointmentid");
             entity.Property(e => e.Assessment).HasColumnName("assessment");
-            entity.Property(e => e.Createdat)
+            entity.Property(e => e.Createdate)
                 .HasDefaultValueSql("now()")
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("createdat");
@@ -131,7 +131,7 @@ public partial class TelemedDbContext : DbContext
             entity.Property(e => e.Plan).HasColumnName("plan");
             entity.Property(e => e.Providerid).HasColumnName("providerid");
             entity.Property(e => e.Subjective).HasColumnName("subjective");
-            entity.Property(e => e.Updatedat)
+            entity.Property(e => e.Updatedate)
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("updatedat");
 

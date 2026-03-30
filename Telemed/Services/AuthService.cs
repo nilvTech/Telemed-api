@@ -130,7 +130,7 @@ public class AuthService : IAuthService
             Firstname = dto.AdminName,   // Store in Firstname
             Lastname = "",               // No lastname provided
             Email = dto.Email,
-            Createdat = DateTime.UtcNow
+            Createdate = DateTime.UtcNow
         };
 
         _context.Admins.Add(admin);

@@ -24,7 +24,7 @@ public static class EncounterMapper
             Diagnosis = dto.Diagnosis,
             Icd10code = dto.Icd10code,
             Notes = dto.Notes,
-            Createdat = ToUnspecified(DateTime.UtcNow)
+            Createdate = ToUnspecified(DateTime.UtcNow)
         };
     }
 
@@ -54,7 +54,7 @@ public static class EncounterMapper
         if (!string.IsNullOrEmpty(dto.Notes))
             entity.Notes = dto.Notes;
 
-        entity.Updatedat = ToUnspecified(DateTime.UtcNow);
+        entity.Updatedate = ToUnspecified(DateTime.UtcNow);
     }
 
     public static EncounterResponseDto ToResponseDto(Encounter entity)
@@ -86,8 +86,8 @@ public static class EncounterMapper
             Diagnosis = entity.Diagnosis,
             Icd10code = entity.Icd10code,
             Notes = entity.Notes,
-            Createdat = entity.Createdat,
-            Updatedat = entity.Updatedat
+            Createdat = entity.Createdate,
+            Updatedat = entity.Updatedate
         };
     }
 }
