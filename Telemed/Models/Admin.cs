@@ -15,5 +15,5 @@ public partial class Admin
 
     public string? Phone { get; set; }
 
-    public DateTime? Createdat { get; set; }
+    public DateTime? Createdate { get; set; }
 }

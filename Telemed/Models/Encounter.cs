@@ -29,9 +29,9 @@ public partial class Encounter
 
     public string? Notes { get; set; }
 
-    public DateTime? Createdat { get; set; }
+    public DateTime? Createdate { get; set; }
 
-    public DateTime? Updatedat { get; set; }
+    public DateTime? Updatedate { get; set; }
 
     public virtual Appointment Appointment { get; set; } = null!;
 
