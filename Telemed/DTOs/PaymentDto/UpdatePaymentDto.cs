@@ -1,0 +1,9 @@
+﻿// DTOs/UpdatePaymentDto.cs
+namespace Telemed.DTOs;
+
+public class UpdatePaymentDto
+{
+    public decimal? Amount { get; set; }
+    public string? Paymentmethod { get; set; }
+    public string? Status { get; set; }
+}
