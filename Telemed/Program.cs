@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -12,14 +11,24 @@ using Telemed.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// PostgreSQL timestamp behavior
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
+// -----------------------
+// DbContext
+// -----------------------
 builder.Services.AddDbContext<TelemedDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// -----------------------
 // JWT Authentication
+// -----------------------
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-var secretKey = jwtSettings["SecretKey"]!;
+var secretKey = jwtSettings["SecretKey"]!.Trim();
+
+Console.WriteLine($"Secret Key Length: {secretKey.Length}");
+Console.WriteLine($"Issuer: {jwtSettings["Issuer"]}");
+Console.WriteLine($"Audience: {jwtSettings["Audience"]}");
 
 builder.Services.AddAuthentication(options =>
 {
@@ -28,27 +37,68 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
+    options.RequireHttpsMetadata = false;
+    options.SaveToken = true;
+
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
 
         ValidateIssuer = true,
-        ValidIssuer = jwtSettings["Issuer"],
+        ValidIssuer = jwtSettings["Issuer"]!.Trim(),
 
         ValidateAudience = true,
-        ValidAudience = jwtSettings["Audience"],
+        ValidAudience = jwtSettings["Audience"]!.Trim(),
 
         ValidateLifetime = true,
         ClockSkew = TimeSpan.Zero,
 
-        // 🔥 REQUIRED FOR ROLE BASED AUTH
-        RoleClaimType = ClaimTypes.Role
+        RoleClaimType = ClaimTypes.Role,
+        NameClaimType = ClaimTypes.NameIdentifier
+    };
+
+    // -----------------------
+    // Debug JWT Events
+    // -----------------------
+    options.Events = new JwtBearerEvents
+    {
+        OnAuthenticationFailed = context =>
+        {
+            Console.WriteLine($"❌ Auth Failed: {context.Exception.GetType().Name} | {context.Exception.Message}");
+            return Task.CompletedTask;
+        },
+        OnTokenValidated = context =>
+        {
+            var userId = context.Principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var role = context.Principal?.FindFirst(ClaimTypes.Role)?.Value;
+            Console.WriteLine($"✅ Token Valid — UserId: {userId} | Role: {role}");
+            return Task.CompletedTask;
+        },
+        OnChallenge = context =>
+        {
+            Console.WriteLine($"⚠️ Challenge: {context.Error} | {context.ErrorDescription}");
+            Console.WriteLine($"⚠️ Path: {context.Request.Path}");
+            Console.WriteLine($"⚠️ Auth Header: {context.Request.Headers["Authorization"]}");
+            return Task.CompletedTask;
+        },
+        OnForbidden = context =>
+        {
+            var role = context.HttpContext.User.FindFirst(ClaimTypes.Role)?.Value;
+            Console.WriteLine($"🚫 Forbidden — Role mismatch | User Role: {role}");
+            return Task.CompletedTask;
+        }
     };
 });
 
+// -----------------------
+// Authorization
+// -----------------------
 builder.Services.AddAuthorization();
 
+// -----------------------
+// Controllers
+// -----------------------
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -56,9 +106,10 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.DictionaryKeyPolicy = null;
     });
 
+// -----------------------
+// Swagger with JWT
+// -----------------------
 builder.Services.AddEndpointsApiExplorer();
-
-// Swagger with JWT support
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
@@ -86,7 +137,7 @@ builder.Services.AddSwaggerGen(options =>
                 Reference = new OpenApiReference
                 {
                     Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
+                    Id   = "Bearer"
                 }
             },
             Array.Empty<string>()
@@ -94,7 +145,9 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-// Services DI
+// -----------------------
+// Services Registration
+// -----------------------
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPatientService, PatientService>();
@@ -110,6 +163,9 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 
 var app = builder.Build();
 
+// -----------------------
+// Middleware
+// -----------------------
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -118,10 +174,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Middleware order is critical
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
 app.Run();

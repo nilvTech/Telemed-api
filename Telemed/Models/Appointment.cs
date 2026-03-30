@@ -19,9 +19,9 @@ public partial class Appointment
 
     public string? Notes { get; set; }
 
-    public DateTime? Createdat { get; set; }
+    public DateTime? Createdate { get; set; }
 
-    public DateTime? Updatedat { get; set; }
+    public DateTime? Updatedate { get; set; }
 
     public virtual ICollection<Encounter> Encounters { get; set; } = new List<Encounter>();
 

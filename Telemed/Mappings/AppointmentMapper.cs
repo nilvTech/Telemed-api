@@ -19,7 +19,7 @@ public static class AppointmentMapper
             Mode = dto.Mode ?? "Telemedicine",
             Notes = dto.Notes,
             Status = "Pending",
-            Createdat = ToUnspecified(DateTime.UtcNow)
+            Createdate = ToUnspecified(DateTime.UtcNow)
         };
     }
 
@@ -37,7 +37,7 @@ public static class AppointmentMapper
         if (!string.IsNullOrEmpty(dto.Notes))
             entity.Notes = dto.Notes;
 
-        entity.Updatedat = ToUnspecified(DateTime.UtcNow);
+        entity.Updatedate = ToUnspecified(DateTime.UtcNow);
     }
 
     public static AppointmentResponseDto ToResponseDto(Appointment entity)
@@ -62,8 +62,8 @@ public static class AppointmentMapper
             Status = entity.Status,
             Mode = entity.Mode,
             Notes = entity.Notes,
-            Createdat = entity.Createdat,   
-            Updatedat = entity.Updatedat    
+            Createdat = entity.Createdate,   
+            Updatedat = entity.Updatedate    
         };
     }
 }

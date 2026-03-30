@@ -79,7 +79,7 @@ public partial class TelemedDbContext : DbContext
             entity.ToTable("appointment");
 
             entity.Property(e => e.Appointmentid).HasColumnName("appointmentid");
-            entity.Property(e => e.Createdat)
+            entity.Property(e => e.Createdate)
                 .HasDefaultValueSql("now()")
                 .HasColumnName("createdat");
             entity.Property(e => e.Mode)
@@ -94,7 +94,7 @@ public partial class TelemedDbContext : DbContext
                 .HasMaxLength(20)
                 .HasDefaultValueSql("'Pending'::character varying")
                 .HasColumnName("status");
-            entity.Property(e => e.Updatedat).HasColumnName("updatedat");
+            entity.Property(e => e.Updatedate).HasColumnName("updatedat");
 
             entity.HasOne(d => d.Patient).WithMany(p => p.Appointments)
                 .HasForeignKey(d => d.Patientid)

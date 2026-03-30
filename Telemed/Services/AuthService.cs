@@ -65,7 +65,6 @@ public class AuthService : IAuthService
         await _context.SaveChangesAsync();
 
         var fullname = $"{patient.Firstname} {patient.Lastname}".Trim();
-
         var token = _jwtService.GenerateToken(user, fullname);
 
         return BuildAuthResponse(user, token, refreshToken, fullname);
@@ -118,7 +117,7 @@ public class AuthService : IAuthService
     }
 
     // -------------------------------------------------------
-    // REGISTER ADMIN (FIXED)
+    // REGISTER ADMIN
     // -------------------------------------------------------
     public async Task<AuthResponseDto> RegisterAdminAsync(RegisterAdminDto dto)
     {
@@ -127,8 +126,8 @@ public class AuthService : IAuthService
 
         var admin = new Admin
         {
-            Firstname = dto.AdminName,   // Store in Firstname
-            Lastname = "",               // No lastname provided
+            Firstname = dto.AdminName,
+            Lastname = "",
             Email = dto.Email,
             Createdat = DateTime.UtcNow
         };
@@ -155,7 +154,6 @@ public class AuthService : IAuthService
         await _context.SaveChangesAsync();
 
         var fullname = $"{admin.Firstname} {admin.Lastname}".Trim();
-
         var token = _jwtService.GenerateToken(user, fullname);
 
         return BuildAuthResponse(user, token, refreshToken, fullname);
@@ -178,6 +176,9 @@ public class AuthService : IAuthService
         if (!user.Isactive.GetValueOrDefault())
             throw new ArgumentException("Account is deactivated.");
 
+        // Debug
+        Console.WriteLine($"Login — Email: {user.Email} | Role: {user.Role} | ReferenceId: {user.Referenceid}");
+
         var refreshToken = _jwtService.GenerateRefreshToken();
         user.Refreshtoken = refreshToken;
         user.Refreshtokenexpiry = DateTime.UtcNow.AddDays(
@@ -188,6 +189,9 @@ public class AuthService : IAuthService
 
         var fullname = await ResolveFullnameAsync(user.Role, user.Referenceid);
         var token = _jwtService.GenerateToken(user, fullname);
+
+        // Debug
+        Console.WriteLine($"Token generated for: {fullname} | Role: {user.Role}");
 
         return BuildAuthResponse(user, token, refreshToken, fullname);
     }
@@ -235,7 +239,7 @@ public class AuthService : IAuthService
     }
 
     // -------------------------------------------------------
-    // Build Auth Response
+    // HELPER: Build Auth Response
     // -------------------------------------------------------
     private AuthResponseDto BuildAuthResponse(User user, string token, string refreshToken, string fullname)
     {
@@ -254,28 +258,28 @@ public class AuthService : IAuthService
     }
 
     // -------------------------------------------------------
-    // Resolve Fullname
+    // HELPER: Resolve full name by role
     // -------------------------------------------------------
     private async Task<string> ResolveFullnameAsync(string role, int referenceId)
     {
-        if (role == "Patient")
-        {
-            var p = await _context.Patients.FirstOrDefaultAsync(x => x.Patientid == referenceId);
-            return p != null ? $"{p.Firstname} {p.Lastname}".Trim() : "Unknown";
-        }
+        Console.WriteLine($"ResolveFullname called — Role: {role}, ReferenceId: {referenceId}");
 
-        if (role == "Provider")
+        if (role.ToLower() == "patient")
         {
-            var pr = await _context.Providers.FirstOrDefaultAsync(x => x.Providerid == referenceId);
-            return pr?.Providername ?? "Unknown";
+            var patient = await _context.Patients.FirstOrDefaultAsync(p => p.Patientid == referenceId);
+            return patient != null ? $"{patient.Firstname} {patient.Lastname}".Trim() : "Unknown Patient";
         }
-
-        if (role == "Admin")
+        else if (role.ToLower() == "provider")
         {
-            var ad = await _context.Admins.FirstOrDefaultAsync(x => x.Adminid == referenceId);
-            return ad != null ? $"{ad.Firstname} {ad.Lastname}".Trim() : "Admin";
+            var provider = await _context.Providers.FirstOrDefaultAsync(p => p.Providerid == referenceId);
+            return provider?.Providername ?? "Unknown Provider";
+        }
+        else if (role.ToLower() == "admin")
+        {
+            var admin = await _context.Admins.FirstOrDefaultAsync(a => a.Adminid == referenceId);
+            return admin != null ? $"{admin.Firstname} {admin.Lastname}".Trim() : "Admin";
         }
 
         return "Unknown";
     }
-}
+}   

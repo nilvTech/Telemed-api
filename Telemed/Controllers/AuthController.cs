@@ -62,4 +62,19 @@ public class AuthController : ControllerBase
         await _service.LogoutAsync(int.Parse(claim.Value));
         return Ok(new { message = "Logout successful" });
     }
+
+    [Authorize]
+    [HttpGet("debug-auth")]
+    public IActionResult DebugAuth()
+    {
+        return Ok(new
+        {
+            IsAuthenticated = User.Identity?.IsAuthenticated,
+            UserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value,
+            Email = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value,
+            Role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value,
+            ReferenceId = User.FindFirst("ReferenceId")?.Value,
+            Fullname = User.FindFirst("Fullname")?.Value
+        });
+    }
 }
