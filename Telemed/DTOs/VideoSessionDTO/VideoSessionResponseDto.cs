@@ -2,11 +2,11 @@
 {
     public class VideoSessionResponseDto
     {
-        public int VideoSessionId { get; set; }
+        public long VideoSessionId { get; set; }
 
-        public int EncounterId { get; set; }
-        public int ProviderId { get; set; }
-        public int PatientId { get; set; }
+        public long EncounterId { get; set; }
+        public long ProviderId { get; set; }
+        public long PatientId { get; set; }
 
         public DateTime? StartTime { get; set; }
         public DateTime? EndTime { get; set; }

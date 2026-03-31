@@ -3,16 +3,16 @@ namespace Telemed.DTOs;
 
 public class MessageResponseDto
 {
-    public int Messageid { get; set; }
+    public long Messageid { get; set; }
 
     // Patient Info
-    public int Patientid { get; set; }
+    public long Patientid { get; set; }
     public string? Patientname { get; set; }
     public string? Patientemail { get; set; }
     public string? Patientphone { get; set; }
 
     // Provider Info
-    public int Providerid { get; set; }
+    public long Providerid { get; set; }
     public string? Providername { get; set; }
     public string? Speciality { get; set; }
 

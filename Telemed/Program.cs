@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Telemed.Middleware;
@@ -13,6 +14,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 // PostgreSQL timestamp behavior
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
+// == CRITICAL JWT CLAIM FIXES ==
+JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
+JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
 // -----------------------
 // DbContext
@@ -39,6 +44,7 @@ builder.Services.AddAuthentication(options =>
 {
     options.RequireHttpsMetadata = false;
     options.SaveToken = true;
+    options.MapInboundClaims = false;
 
     options.TokenValidationParameters = new TokenValidationParameters
     {
@@ -53,14 +59,13 @@ builder.Services.AddAuthentication(options =>
 
         ValidateLifetime = true,
         ClockSkew = TimeSpan.Zero,
+        RequireExpirationTime = true,
 
         RoleClaimType = ClaimTypes.Role,
         NameClaimType = ClaimTypes.NameIdentifier
     };
 
-    // -----------------------
-    // Debug JWT Events
-    // -----------------------
+    // Debug Events - Very Helpful
     options.Events = new JwtBearerEvents
     {
         OnAuthenticationFailed = context =>
@@ -71,21 +76,23 @@ builder.Services.AddAuthentication(options =>
         OnTokenValidated = context =>
         {
             var userId = context.Principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var role = context.Principal?.FindFirst(ClaimTypes.Role)?.Value;
-            Console.WriteLine($"✅ Token Valid — UserId: {userId} | Role: {role}");
+            var role = context.Principal?.FindFirst(ClaimTypes.Role)?.Value
+                    ?? context.Principal?.FindFirst("http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
+
+            Console.WriteLine($"✅ Token Validated Successfully — UserId: {userId} | Role: {role}");
             return Task.CompletedTask;
         },
         OnChallenge = context =>
         {
-            Console.WriteLine($"⚠️ Challenge: {context.Error} | {context.ErrorDescription}");
-            Console.WriteLine($"⚠️ Path: {context.Request.Path}");
-            Console.WriteLine($"⚠️ Auth Header: {context.Request.Headers["Authorization"]}");
+            Console.WriteLine($"⚠️ Challenge Triggered on Path: {context.Request.Path}");
+            Console.WriteLine($"   Error: {context.Error} | Description: {context.ErrorDescription}");
             return Task.CompletedTask;
         },
         OnForbidden = context =>
         {
-            var role = context.HttpContext.User.FindFirst(ClaimTypes.Role)?.Value;
-            Console.WriteLine($"🚫 Forbidden — Role mismatch | User Role: {role}");
+            var role = context.HttpContext.User.FindFirst(ClaimTypes.Role)?.Value
+                    ?? context.HttpContext.User.FindFirst("http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value;
+            Console.WriteLine($"🚫 Forbidden - Role mismatch | Current Role: {role ?? "NULL"}");
             return Task.CompletedTask;
         }
     };
@@ -107,7 +114,7 @@ builder.Services.AddControllers()
     });
 
 // -----------------------
-// Swagger with JWT
+// Swagger with JWT 
 // -----------------------
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -119,16 +126,18 @@ builder.Services.AddSwaggerGen(options =>
         Description = "US Telemedicine REST API with JWT Authentication"
     });
 
+    // Correct JWT Security Definition
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
-        Type = SecuritySchemeType.ApiKey,
+        Type = SecuritySchemeType.Http,
         Scheme = "Bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "Enter: Bearer {your JWT token}"
+        Description = "Enter JWT token in format: Bearer {your-token-here}"
     });
 
+    // Global Security Requirement - Makes Authorize button visible
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -137,10 +146,10 @@ builder.Services.AddSwaggerGen(options =>
                 Reference = new OpenApiReference
                 {
                     Type = ReferenceType.SecurityScheme,
-                    Id   = "Bearer"
+                    Id = "Bearer"
                 }
             },
-            Array.Empty<string>()
+            new string[] { }
         }
     });
 });
@@ -152,7 +161,6 @@ builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPatientService, PatientService>();
 builder.Services.AddScoped<IProviderService, ProviderService>();
-builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 builder.Services.AddScoped<IEncounterService, EncounterService>();
 builder.Services.AddScoped<IVideoSessionService, VideoSessionService>();
 builder.Services.AddScoped<IVitalService, VitalService>();
@@ -164,7 +172,7 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 var app = builder.Build();
 
 // -----------------------
-// Middleware
+// Middleware Pipeline - 
 // -----------------------
 if (app.Environment.IsDevelopment())
 {
@@ -174,10 +182,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Middleware order is critical
-app.UseMiddleware<ExceptionHandlingMiddleware>();
-app.UseAuthentication();
+app.UseAuthentication();      // ←= Must come before Authorization
 app.UseAuthorization();
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();   //  Last
 
 app.MapControllers();
 app.Run();

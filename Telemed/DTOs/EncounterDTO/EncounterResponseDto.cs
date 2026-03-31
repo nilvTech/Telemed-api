@@ -3,18 +3,18 @@ namespace Telemed.DTOs;
 
 public class EncounterResponseDto
 {
-    public int Encounterid { get; set; }
+    public long Encounterid { get; set; }
 
     // Appointment Info
-    public int Appointmentid { get; set; }
+    public long Appointmentid { get; set; }
     public DateTime? Appointmentdate { get; set; }
 
     // Patient Info
-    public int Patientid { get; set; }
+    public long Patientid { get; set; }
     public string? Patientname { get; set; }
 
     // Provider Info
-    public int Providerid { get; set; }
+    public long Providerid { get; set; }
     public string? Providername { get; set; }
     public string? Speciality { get; set; }
 

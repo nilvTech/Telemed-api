@@ -9,9 +9,9 @@ public partial class Videosession
 
     public int Encounterid { get; set; }
 
-    public int Providerid { get; set; }
+    public long Providerid { get; set; }
 
-    public int Patientid { get; set; }
+    public long Patientid { get; set; }
 
     public DateTime? Starttime { get; set; }
 

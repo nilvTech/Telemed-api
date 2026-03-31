@@ -6,10 +6,6 @@ namespace Telemed.Models;
 
 public partial class TelemedDbContext : DbContext
 {
-    public TelemedDbContext()
-    {
-    }
-
     public TelemedDbContext(DbContextOptions<TelemedDbContext> options)
         : base(options)
     {
@@ -18,6 +14,20 @@ public partial class TelemedDbContext : DbContext
     public virtual DbSet<Admin> Admins { get; set; }
 
     public virtual DbSet<Appointment> Appointments { get; set; }
+
+    public virtual DbSet<Appointmentdocument> Appointmentdocuments { get; set; }
+
+    public virtual DbSet<Appointmentnote> Appointmentnotes { get; set; }
+
+    public virtual DbSet<Appointmentstatushistory> Appointmentstatushistories { get; set; }
+
+    public virtual DbSet<Consultation> Consultations { get; set; }
+
+    public virtual DbSet<Consultationdiagnosis> Consultationdiagnoses { get; set; }
+
+    public virtual DbSet<Consultationnote> Consultationnotes { get; set; }
+
+    public virtual DbSet<Consultationprescription> Consultationprescriptions { get; set; }
 
     public virtual DbSet<Encounter> Encounters { get; set; }
 
@@ -38,10 +48,6 @@ public partial class TelemedDbContext : DbContext
     public virtual DbSet<Videosession> Videosessions { get; set; }
 
     public virtual DbSet<Vital> Vitals { get; set; }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=TelemedDB;Username=postgres;Password=Saurabh@14");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -78,31 +84,290 @@ public partial class TelemedDbContext : DbContext
 
             entity.ToTable("appointment");
 
-            entity.Property(e => e.Appointmentid).HasColumnName("appointmentid");
-            entity.Property(e => e.Createdate)
+            entity.HasIndex(e => e.Appointmentdate, "ix_appointment_date");
+
+            entity.HasIndex(e => e.Patientid, "ix_appointment_patient");
+
+            entity.HasIndex(e => new { e.Providerid, e.Appointmentdate }, "ix_appointment_provider_date");
+
+            entity.HasIndex(e => e.Status, "ix_appointment_status");
+
+            entity.Property(e => e.Appointmentid)
+                .UseIdentityAlwaysColumn()
+                .HasColumnName("appointmentid");
+            entity.Property(e => e.Appointmentdate).HasColumnName("appointmentdate");
+            entity.Property(e => e.Checkedintime)
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("checkedintime");
+            entity.Property(e => e.Clinicid).HasColumnName("clinicid");
+            entity.Property(e => e.Createdby).HasColumnName("createdby");
+            entity.Property(e => e.Createddate)
                 .HasDefaultValueSql("now()")
-                .HasColumnName("createdat");
-            entity.Property(e => e.Mode)
-                .HasMaxLength(20)
-                .HasDefaultValueSql("'Telemedicine'::character varying")
-                .HasColumnName("mode");
-            entity.Property(e => e.Notes).HasColumnName("notes");
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("createddate");
+            entity.Property(e => e.Endtime).HasColumnName("endtime");
+            entity.Property(e => e.Isactive)
+                .HasDefaultValue(true)
+                .HasColumnName("isactive");
+            entity.Property(e => e.Isfollowup)
+                .HasDefaultValue(false)
+                .HasColumnName("isfollowup");
+            entity.Property(e => e.Ispaid)
+                .HasDefaultValue(false)
+                .HasColumnName("ispaid");
+            entity.Property(e => e.Meetingid)
+                .HasMaxLength(100)
+                .HasColumnName("meetingid");
+            entity.Property(e => e.Meetinglink)
+                .HasMaxLength(500)
+                .HasColumnName("meetinglink");
+            entity.Property(e => e.Parentappointmentid).HasColumnName("parentappointmentid");
             entity.Property(e => e.Patientid).HasColumnName("patientid");
-            entity.Property(e => e.Providerid).HasColumnName("providerid");
-            entity.Property(e => e.Scheduleddatetime).HasColumnName("scheduleddatetime");
-            entity.Property(e => e.Status)
+            entity.Property(e => e.Paymentid).HasColumnName("paymentid");
+            entity.Property(e => e.Priority)
                 .HasMaxLength(20)
-                .HasDefaultValueSql("'Pending'::character varying")
+                .HasColumnName("priority");
+            entity.Property(e => e.Providerid).HasColumnName("providerid");
+            entity.Property(e => e.Queueposition).HasColumnName("queueposition");
+            entity.Property(e => e.Starttime).HasColumnName("starttime");
+            entity.Property(e => e.Status)
+                .HasMaxLength(50)
                 .HasColumnName("status");
-            entity.Property(e => e.Updatedate).HasColumnName("updatedat");
+            entity.Property(e => e.Tokennumber).HasColumnName("tokennumber");
+            entity.Property(e => e.Updatedby).HasColumnName("updatedby");
+            entity.Property(e => e.Updateddate)
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("updateddate");
+            entity.Property(e => e.Visitmode)
+                .HasMaxLength(50)
+                .HasColumnName("visitmode");
+            entity.Property(e => e.Visitreason)
+                .HasMaxLength(255)
+                .HasColumnName("visitreason");
+            entity.Property(e => e.Visittype)
+                .HasMaxLength(50)
+                .HasColumnName("visittype");
+            entity.Property(e => e.Waitingminutes).HasColumnName("waitingminutes");
 
             entity.HasOne(d => d.Patient).WithMany(p => p.Appointments)
                 .HasForeignKey(d => d.Patientid)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_appointment_patient");
 
             entity.HasOne(d => d.Provider).WithMany(p => p.Appointments)
                 .HasForeignKey(d => d.Providerid)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_appointment_provider");
+        });
+
+        modelBuilder.Entity<Appointmentdocument>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("appointmentdocuments_pkey");
+
+            entity.ToTable("appointmentdocuments");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Appointmentid).HasColumnName("appointmentid");
+            entity.Property(e => e.Filetype)
+                .HasMaxLength(50)
+                .HasColumnName("filetype");
+            entity.Property(e => e.Fileurl)
+                .HasMaxLength(500)
+                .HasColumnName("fileurl");
+            entity.Property(e => e.Uploadedat)
+                .HasDefaultValueSql("now()")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("uploadedat");
+        });
+
+        modelBuilder.Entity<Appointmentnote>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("appointmentnotes_pkey");
+
+            entity.ToTable("appointmentnotes");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Appointmentid).HasColumnName("appointmentid");
+            entity.Property(e => e.Createdat)
+                .HasDefaultValueSql("now()")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("createdat");
+            entity.Property(e => e.Notes).HasColumnName("notes");
+        });
+
+        modelBuilder.Entity<Appointmentstatushistory>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("appointmentstatushistory_pkey");
+
+            entity.ToTable("appointmentstatushistory");
+
+            entity.Property(e => e.Id)
+                .UseIdentityAlwaysColumn()
+                .HasColumnName("id");
+            entity.Property(e => e.Appointmentid).HasColumnName("appointmentid");
+            entity.Property(e => e.Changedat)
+                .HasDefaultValueSql("now()")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("changedat");
+            entity.Property(e => e.Changedby).HasColumnName("changedby");
+            entity.Property(e => e.Status)
+                .HasMaxLength(50)
+                .HasColumnName("status");
+        });
+
+        modelBuilder.Entity<Consultation>(entity =>
+        {
+            entity.HasKey(e => e.Consultationid).HasName("consultation_pkey");
+
+            entity.ToTable("consultation");
+
+            entity.HasIndex(e => e.Appointmentid, "ix_consultation_appointment");
+
+            entity.HasIndex(e => e.Patientid, "ix_consultation_patient");
+
+            entity.HasIndex(e => new { e.Providerid, e.Createddate }, "ix_consultation_provider_date");
+
+            entity.HasIndex(e => e.Status, "ix_consultation_status");
+
+            entity.Property(e => e.Consultationid).HasColumnName("consultationid");
+            entity.Property(e => e.Appointmentid).HasColumnName("appointmentid");
+            entity.Property(e => e.Bloodpressure)
+                .HasMaxLength(20)
+                .HasColumnName("bloodpressure");
+            entity.Property(e => e.Chiefcomplaint)
+                .HasMaxLength(500)
+                .HasColumnName("chiefcomplaint");
+            entity.Property(e => e.Createdby).HasColumnName("createdby");
+            entity.Property(e => e.Createddate)
+                .HasDefaultValueSql("now()")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("createddate");
+            entity.Property(e => e.Diagnosis)
+                .HasMaxLength(500)
+                .HasColumnName("diagnosis");
+            entity.Property(e => e.Durationminutes).HasColumnName("durationminutes");
+            entity.Property(e => e.Endtime)
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("endtime");
+            entity.Property(e => e.Followupdate).HasColumnName("followupdate");
+            entity.Property(e => e.Followupnotes)
+                .HasMaxLength(500)
+                .HasColumnName("followupnotes");
+            entity.Property(e => e.Isactive)
+                .HasDefaultValue(true)
+                .HasColumnName("isactive");
+            entity.Property(e => e.Isprescriptiongenerated)
+                .HasDefaultValue(false)
+                .HasColumnName("isprescriptiongenerated");
+            entity.Property(e => e.Notes).HasColumnName("notes");
+            entity.Property(e => e.Oxygensaturation).HasColumnName("oxygensaturation");
+            entity.Property(e => e.Patientid).HasColumnName("patientid");
+            entity.Property(e => e.Providerid).HasColumnName("providerid");
+            entity.Property(e => e.Pulse).HasColumnName("pulse");
+            entity.Property(e => e.Recordingurl)
+                .HasMaxLength(500)
+                .HasColumnName("recordingurl");
+            entity.Property(e => e.Respiratoryrate).HasColumnName("respiratoryrate");
+            entity.Property(e => e.Starttime)
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("starttime");
+            entity.Property(e => e.Status)
+                .HasMaxLength(50)
+                .HasColumnName("status");
+            entity.Property(e => e.Temperature)
+                .HasPrecision(5, 2)
+                .HasColumnName("temperature");
+            entity.Property(e => e.Treatmentplan).HasColumnName("treatmentplan");
+            entity.Property(e => e.Updatedby).HasColumnName("updatedby");
+            entity.Property(e => e.Updateddate)
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("updateddate");
+
+            entity.HasOne(d => d.Appointment).WithMany(p => p.Consultations)
+                .HasForeignKey(d => d.Appointmentid)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_consultation_appointment");
+
+            entity.HasOne(d => d.Patient).WithMany(p => p.Consultations)
+                .HasForeignKey(d => d.Patientid)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_consultation_patient");
+
+            entity.HasOne(d => d.Provider).WithMany(p => p.Consultations)
+                .HasForeignKey(d => d.Providerid)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_consultation_provider");
+        });
+
+        modelBuilder.Entity<Consultationdiagnosis>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("consultationdiagnosis_pkey");
+
+            entity.ToTable("consultationdiagnosis");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Consultationid).HasColumnName("consultationid");
+            entity.Property(e => e.Diagnosiscode)
+                .HasMaxLength(50)
+                .HasColumnName("diagnosiscode");
+            entity.Property(e => e.Diagnosisname)
+                .HasMaxLength(200)
+                .HasColumnName("diagnosisname");
+
+            entity.HasOne(d => d.Consultation).WithMany(p => p.Consultationdiagnoses)
+                .HasForeignKey(d => d.Consultationid)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_consultationdiagnosis_consultation");
+        });
+
+        modelBuilder.Entity<Consultationnote>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("consultationnotes_pkey");
+
+            entity.ToTable("consultationnotes");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Consultationid).HasColumnName("consultationid");
+            entity.Property(e => e.Createdat)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("createdat");
+            entity.Property(e => e.Notes).HasColumnName("notes");
+
+            entity.HasOne(d => d.Consultation).WithMany(p => p.Consultationnotes)
+                .HasForeignKey(d => d.Consultationid)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_consultationnotes_consultation");
+        });
+
+        modelBuilder.Entity<Consultationprescription>(entity =>
+        {
+            entity.HasKey(e => e.Prescriptionid).HasName("consultationprescription_pkey");
+
+            entity.ToTable("consultationprescription");
+
+            entity.Property(e => e.Prescriptionid).HasColumnName("prescriptionid");
+            entity.Property(e => e.Consultationid).HasColumnName("consultationid");
+            entity.Property(e => e.Dosage)
+                .HasMaxLength(100)
+                .HasColumnName("dosage");
+            entity.Property(e => e.Duration)
+                .HasMaxLength(100)
+                .HasColumnName("duration");
+            entity.Property(e => e.Frequency)
+                .HasMaxLength(100)
+                .HasColumnName("frequency");
+            entity.Property(e => e.Instructions)
+                .HasMaxLength(500)
+                .HasColumnName("instructions");
+            entity.Property(e => e.Medicationname)
+                .HasMaxLength(200)
+                .HasColumnName("medicationname");
+
+            entity.HasOne(d => d.Consultation).WithMany(p => p.Consultationprescriptions)
+                .HasForeignKey(d => d.Consultationid)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_consultationprescription_consultation");
         });
 
         modelBuilder.Entity<Encounter>(entity =>
@@ -134,10 +399,6 @@ public partial class TelemedDbContext : DbContext
             entity.Property(e => e.Updatedat)
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("updatedat");
-
-            entity.HasOne(d => d.Appointment).WithMany(p => p.Encounters)
-                .HasForeignKey(d => d.Appointmentid)
-                .HasConstraintName("fk_encounter_appointment");
 
             entity.HasOne(d => d.Patient).WithMany(p => p.Encounters)
                 .HasForeignKey(d => d.Patientid)
@@ -273,10 +534,6 @@ public partial class TelemedDbContext : DbContext
                 .HasMaxLength(20)
                 .HasDefaultValueSql("'Pending'::character varying")
                 .HasColumnName("status");
-
-            entity.HasOne(d => d.Appointment).WithMany(p => p.Payments)
-                .HasForeignKey(d => d.Appointmentid)
-                .HasConstraintName("fk_payment_appointment");
 
             entity.HasOne(d => d.Patient).WithMany(p => p.Payments)
                 .HasForeignKey(d => d.Patientid)

@@ -260,7 +260,7 @@ public class AuthService : IAuthService
     // -------------------------------------------------------
     // HELPER: Resolve full name by role
     // -------------------------------------------------------
-    private async Task<string> ResolveFullnameAsync(string role, int referenceId)
+    private async Task<string> ResolveFullnameAsync(string role, long referenceId)
     {
         Console.WriteLine($"ResolveFullname called — Role: {role}, ReferenceId: {referenceId}");
 

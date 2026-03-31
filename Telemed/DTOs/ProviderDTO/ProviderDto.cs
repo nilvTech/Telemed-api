@@ -2,7 +2,7 @@
 
 public class ProviderDto
 {
-    public int ProviderId { get; set; }
+    public long ProviderId { get; set; }
     public string? ProviderName { get; set; }
     public string? Email { get; set; }
     public string? Phone { get; set; }

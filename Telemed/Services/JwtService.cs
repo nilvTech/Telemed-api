@@ -16,21 +16,26 @@ public class JwtService
         _config = config;
     }
 
+    /// <summary>
+    /// Generates JWT Token with clean and consistent claims
+    /// </summary>
     public string GenerateToken(User user, string fullname)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JwtSettings:SecretKey"]!.Trim()));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
+        // Revised Claims - Using short names + standard ClaimTypes (Recommended)
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, user.Userid.ToString()),
             new Claim(ClaimTypes.Email, user.Email.Trim()),
-            new Claim(ClaimTypes.Role, user.Role.Trim()),
+            new Claim(ClaimTypes.Role, user.Role.Trim()),           // This is important
             new Claim("ReferenceId", user.Referenceid.ToString()),
             new Claim("Fullname", fullname.Trim())
         };
 
-        var expiry = DateTime.UtcNow.AddMinutes(double.Parse(_config["JwtSettings:ExpiryMinutes"]!));
+        var expiry = DateTime.UtcNow.AddMinutes(
+            double.Parse(_config["JwtSettings:ExpiryMinutes"]!));
 
         var token = new JwtSecurityToken(
             issuer: _config["JwtSettings:Issuer"]!.Trim(),
@@ -51,6 +56,7 @@ public class JwtService
         return Convert.ToBase64String(randomBytes);
     }
 
+    // Optional: Keep this for manual token validation if needed elsewhere
     public ClaimsPrincipal? ValidateToken(string token)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
@@ -72,8 +78,9 @@ public class JwtService
                 NameClaimType = ClaimTypes.NameIdentifier
             }, out _);
         }
-        catch
+        catch (Exception ex)
         {
+            Console.WriteLine($"Token validation error: {ex.Message}");
             return null;
         }
     }

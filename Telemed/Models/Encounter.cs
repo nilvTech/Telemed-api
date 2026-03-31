@@ -9,9 +9,9 @@ public partial class Encounter
 
     public int Appointmentid { get; set; }
 
-    public int Patientid { get; set; }
+    public long Patientid { get; set; }
 
-    public int Providerid { get; set; }
+    public long Providerid { get; set; }
 
     public DateTime Encounterdate { get; set; }
 
@@ -32,8 +32,6 @@ public partial class Encounter
     public DateTime? Createdat { get; set; }
 
     public DateTime? Updatedat { get; set; }
-
-    public virtual Appointment Appointment { get; set; } = null!;
 
     public virtual Patient Patient { get; set; } = null!;
 

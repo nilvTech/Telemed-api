@@ -4,7 +4,7 @@ namespace Telemed.DTOs;
 public class CreateVitalDto
 {
     public int Encounterid { get; set; }
-    public int Patientid { get; set; }
+    public long Patientid { get; set; }
     public int? Heartrate { get; set; }
     public string? Bloodpressure { get; set; }
     public int? Respiratoryrate { get; set; }

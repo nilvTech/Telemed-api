@@ -2,7 +2,7 @@
 
 public class PatientDto
 {
-    public int PatientId { get; set; }
+    public long PatientId { get; set; }
     public string FirstName { get; set; } = default!;
     public string? MiddleName { get; set; }
     public string LastName { get; set; } = default!;

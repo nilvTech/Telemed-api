@@ -5,7 +5,7 @@ namespace Telemed.Models;
 
 public partial class Patient
 {
-    public int Patientid { get; set; }
+    public long Patientid { get; set; }
 
     public string? Firstname { get; set; }
 
@@ -64,6 +64,8 @@ public partial class Patient
     public bool? Insurancevalid { get; set; }
 
     public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
+
+    public virtual ICollection<Consultation> Consultations { get; set; } = new List<Consultation>();
 
     public virtual ICollection<Encounter> Encounters { get; set; } = new List<Encounter>();
 

@@ -5,7 +5,7 @@ namespace Telemed.Models;
 
 public partial class Provider
 {
-    public int Providerid { get; set; }
+    public long Providerid { get; set; }
 
     public string Providername { get; set; } = null!;
 
@@ -28,6 +28,8 @@ public partial class Provider
     public DateTime? Updatedat { get; set; }
 
     public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
+
+    public virtual ICollection<Consultation> Consultations { get; set; } = new List<Consultation>();
 
     public virtual ICollection<Encounter> Encounters { get; set; } = new List<Encounter>();
 

@@ -9,9 +9,9 @@ public partial class Payment
 
     public int Appointmentid { get; set; }
 
-    public int Patientid { get; set; }
+    public long Patientid { get; set; }
 
-    public int Providerid { get; set; }
+    public long Providerid { get; set; }
 
     public decimal Amount { get; set; }
 
@@ -22,8 +22,6 @@ public partial class Payment
     public string? Status { get; set; }
 
     public DateTime? Createdat { get; set; }
-
-    public virtual Appointment Appointment { get; set; } = null!;
 
     public virtual Patient Patient { get; set; } = null!;
 

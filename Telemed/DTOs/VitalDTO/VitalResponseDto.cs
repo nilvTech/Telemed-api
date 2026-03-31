@@ -3,13 +3,13 @@ namespace Telemed.DTOs;
 
 public class VitalResponseDto
 {
-    public int Vitalsid { get; set; }
+    public long Vitalsid { get; set; }
 
     // Encounter Info
-    public int Encounterid { get; set; }
+    public long Encounterid { get; set; }
 
     // Patient Info
-    public int Patientid { get; set; }
+    public long Patientid { get; set; }
     public string? Patientname { get; set; }
     public DateTime? Dateofbirth { get; set; }
     public string? Gender { get; set; }

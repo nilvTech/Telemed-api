@@ -9,7 +9,7 @@ public partial class Vital
 
     public int Encounterid { get; set; }
 
-    public int Patientid { get; set; }
+    public long Patientid { get; set; }
 
     public int? Heartrate { get; set; }
 

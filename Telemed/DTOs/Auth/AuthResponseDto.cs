@@ -7,7 +7,7 @@ public class AuthResponseDto
     public string RefreshToken { get; set; } = null!;
     public string Role { get; set; } = null!;
     public int UserId { get; set; }
-    public int ReferenceId { get; set; }
+    public long ReferenceId { get; set; }
     public string Email { get; set; } = null!;
     public string Fullname { get; set; } = null!;
     public DateTime ExpiresAt { get; set; }

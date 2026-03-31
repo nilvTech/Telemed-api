@@ -3,8 +3,8 @@
     public class CreateVideoSessionDto
     {
         public int EncounterId { get; set; }
-        public int ProviderId { get; set; }
-        public int PatientId { get; set; }
+        public long ProviderId { get; set; }
+        public long PatientId { get; set; }
 
         public DateTime? StartTime { get; set; }
 

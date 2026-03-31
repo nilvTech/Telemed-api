@@ -4,8 +4,8 @@ namespace Telemed.DTOs;
 public class CreateEncounterDto
 {
     public int Appointmentid { get; set; }
-    public int Patientid { get; set; }
-    public int Providerid { get; set; }
+    public long Patientid { get; set; }
+    public long Providerid { get; set; }
     public DateTime Encounterdate { get; set; }
     public string? Subjective { get; set; }
     public string? Objective { get; set; }

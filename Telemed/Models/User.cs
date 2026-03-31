@@ -13,7 +13,7 @@ public partial class User
 
     public string Role { get; set; } = null!;
 
-    public int Referenceid { get; set; }
+    public long Referenceid { get; set; }
 
     public bool? Isactive { get; set; }
 

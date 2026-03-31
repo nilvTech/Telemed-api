@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Telemed.DTOs;
 using Telemed.Services.Interfaces;
 
@@ -6,6 +7,7 @@ namespace Telemed.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class VideoSessionController : ControllerBase
     {
         private readonly IVideoSessionService _service;
@@ -16,12 +18,14 @@ namespace Telemed.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin,Provider")]
         public async Task<IActionResult> GetAll()
         {
             return Ok(await _service.GetAllAsync());
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin,Provider,Patient")]
         public async Task<IActionResult> Get(int id)
         {
             var result = await _service.GetByIdAsync(id);
@@ -29,6 +33,7 @@ namespace Telemed.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Provider")]
         public async Task<IActionResult> Create([FromBody] CreateVideoSessionDto dto)
         {
             var result = await _service.CreateAsync(dto);
@@ -36,6 +41,7 @@ namespace Telemed.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin,Provider")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateVideoSessionDto dto)
         {
             var result = await _service.UpdateAsync(id, dto);
@@ -43,6 +49,7 @@ namespace Telemed.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var ok = await _service.DeleteAsync(id);
