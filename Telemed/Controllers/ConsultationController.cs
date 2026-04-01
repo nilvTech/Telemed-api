@@ -1,4 +1,4 @@
-﻿// Controllers/AppointmentController.cs
+﻿// Controllers/ConsultationController.cs
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Telemed.DTOs;
@@ -9,22 +9,22 @@ namespace Telemed.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class AppointmentController : ControllerBase
+public class ConsultationController : ControllerBase
 {
-    private readonly IAppointmentService _service;
+    private readonly IConsultationService _service;
 
-    public AppointmentController(IAppointmentService service)
+    public ConsultationController(IConsultationService service)
     {
         _service = service;
     }
 
     [HttpPost]
-    [Authorize(Roles = "Patient,Provider,Admin")]
-    public async Task<IActionResult> Create([FromBody] CreateAppointmentDto dto)
+    [Authorize(Roles = "Provider,Admin")]
+    public async Task<IActionResult> Create([FromBody] CreateConsultationDto dto)
     {
         var result = await _service.CreateAsync(dto);
         return CreatedAtAction(nameof(GetById),
-            new { id = result.Appointmentid }, result);
+            new { id = result.Consultationid }, result);
     }
 
     [HttpGet]
@@ -41,7 +41,7 @@ public class AppointmentController : ControllerBase
     {
         var result = await _service.GetByIdAsync(id);
         if (result == null)
-            return NotFound(new { error = $"Appointment with ID {id} not found." });
+            return NotFound(new { error = $"Consultation with ID {id} not found." });
         return Ok(result);
     }
 
@@ -61,19 +61,11 @@ public class AppointmentController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet("date/{date}")]
-    [Authorize(Roles = "Provider,Admin")]
-    public async Task<IActionResult> GetByDate(DateOnly date)
+    [HttpGet("appointment/{appointmentId}")]
+    [Authorize(Roles = "Patient,Provider,Admin")]
+    public async Task<IActionResult> GetByAppointmentId(long appointmentId)
     {
-        var result = await _service.GetByDateAsync(date);
-        return Ok(result);
-    }
-
-    [HttpGet("today")]
-    [Authorize(Roles = "Provider,Admin")]
-    public async Task<IActionResult> GetToday()
-    {
-        var result = await _service.GetTodayAsync();
+        var result = await _service.GetByAppointmentIdAsync(appointmentId);
         return Ok(result);
     }
 
@@ -83,9 +75,7 @@ public class AppointmentController : ControllerBase
     {
         var validStatuses = new[]
         {
-            "Scheduled", "Confirmed", "CheckedIn",
-            "InProgress", "Completed", "Cancelled",
-            "NoShow", "Rescheduled"
+            "InProgress", "Completed", "Cancelled", "OnHold"
         };
         if (!validStatuses.Contains(status, StringComparer.OrdinalIgnoreCase))
             return BadRequest(new
@@ -95,22 +85,6 @@ public class AppointmentController : ControllerBase
             });
 
         var result = await _service.GetByStatusAsync(status);
-        return Ok(result);
-    }
-
-    [HttpGet("upcoming/patient/{patientId}")]
-    [Authorize(Roles = "Patient,Provider,Admin")]
-    public async Task<IActionResult> GetUpcomingByPatient(long patientId)
-    {
-        var result = await _service.GetUpcomingByPatientAsync(patientId);
-        return Ok(result);
-    }
-
-    [HttpGet("upcoming/provider/{providerId}")]
-    [Authorize(Roles = "Provider,Admin")]
-    public async Task<IActionResult> GetUpcomingByProvider(long providerId)
-    {
-        var result = await _service.GetUpcomingByProviderAsync(providerId);
         return Ok(result);
     }
 
@@ -124,33 +98,23 @@ public class AppointmentController : ControllerBase
 
     [HttpPut("{id}")]
     [Authorize(Roles = "Provider,Admin")]
-    public async Task<IActionResult> Update(long id, [FromBody] UpdateAppointmentDto dto)
+    public async Task<IActionResult> Update(
+        long id, [FromBody] UpdateConsultationDto dto)
     {
         var result = await _service.UpdateAsync(id, dto);
         if (result == null)
-            return NotFound(new { error = $"Appointment with ID {id} not found." });
+            return NotFound(new { error = $"Consultation with ID {id} not found." });
         return Ok(result);
     }
 
     [HttpPatch("{id}/status")]
     [Authorize(Roles = "Provider,Admin")]
     public async Task<IActionResult> UpdateStatus(
-        long id, [FromBody] AppointmentStatusUpdateDto dto)
+        long id, [FromBody] ConsultationStatusUpdateDto dto)
     {
         var result = await _service.UpdateStatusAsync(id, dto);
         if (result == null)
-            return NotFound(new { error = $"Appointment with ID {id} not found." });
-        return Ok(result);
-    }
-
-    [HttpPatch("{id}/checkin")]
-    [Authorize(Roles = "Provider,Admin")]
-    public async Task<IActionResult> CheckIn(
-        long id, [FromBody] CheckInDto dto)
-    {
-        var result = await _service.CheckInAsync(id, dto);
-        if (result == null)
-            return NotFound(new { error = $"Appointment with ID {id} not found." });
+            return NotFound(new { error = $"Consultation with ID {id} not found." });
         return Ok(result);
     }
 
@@ -160,7 +124,7 @@ public class AppointmentController : ControllerBase
     {
         var success = await _service.DeleteAsync(id);
         if (!success)
-            return NotFound(new { error = $"Appointment with ID {id} not found." });
+            return NotFound(new { error = $"Consultation with ID {id} not found." });
         return NoContent();
     }
 }

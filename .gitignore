@@ -1,0 +1,11 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/Telemed/Controllers/AppointmentController.cs
+/Telemed/DTOs/AppoimentDTO/AppointmentResponseDto.cs
+/Telemed/DTOs/AppoimentDTO/CreateAppointmentDTO.cs
+/Telemed/DTOs/AppoimentDTO/UpdateAppointmentDto.cs
+/Telemed/Mappings/AppointmentMapper.cs
+/Telemed/Services/AppointmentService.cs
+/Telemed/Services/IAppointmentService.cs

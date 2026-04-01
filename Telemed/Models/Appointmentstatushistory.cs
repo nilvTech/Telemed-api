@@ -14,4 +14,6 @@ public partial class Appointmentstatushistory
     public DateTime? Changedat { get; set; }
 
     public long? Changedby { get; set; }
+
+    public virtual Appointment? Appointment { get; set; }
 }

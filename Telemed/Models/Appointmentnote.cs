@@ -12,4 +12,7 @@ public partial class Appointmentnote
     public string? Notes { get; set; }
 
     public DateTime? Createdat { get; set; }
+
+    public virtual Appointment? Appointment { get; set; }
+
 }
