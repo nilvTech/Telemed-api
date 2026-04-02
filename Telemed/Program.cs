@@ -160,7 +160,10 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPatientService, PatientService>();
+builder.Services.AddScoped<IPatientAlertService, PatientAlertService>();
+builder.Services.AddScoped<IPatientFollowUpService, PatientFollowUpService>();
 builder.Services.AddScoped<IProviderService, ProviderService>();
+builder.Services.AddScoped<IPatientSummaryService, PatientSummaryService>();
 builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 builder.Services.AddScoped<IAppointmentDocumentService, AppointmentDocumentService>();
 builder.Services.AddScoped<IAppointmentNoteService, AppointmentNoteService>();

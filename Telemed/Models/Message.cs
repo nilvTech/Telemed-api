@@ -5,7 +5,7 @@ namespace Telemed.Models;
 
 public partial class Message
 {
-    public long Messageid { get; set; }
+    public int Messageid { get; set; }
 
     public long Patientid { get; set; }
 
@@ -14,6 +14,7 @@ public partial class Message
     public string Sendertype { get; set; } = null!;
 
     public string Messagetext { get; set; } = null!;
+
     public DateTime? Sentat { get; set; }
 
     public bool? Isread { get; set; }

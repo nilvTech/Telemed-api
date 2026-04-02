@@ -15,6 +15,5 @@ public partial class Appointmentdocument
 
     public DateTime? Uploadedat { get; set; }
 
-    // ✅ Add navigation property
     public virtual Appointment? Appointment { get; set; }
 }

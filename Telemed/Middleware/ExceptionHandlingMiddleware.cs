@@ -1,6 +1,7 @@
-﻿// Middleware/ExceptionHandlingMiddleware.cs
-using System.Net;
+﻿using System.Net;
 using System.Text.Json;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace Telemed.Middleware;
 
@@ -22,6 +23,35 @@ public class ExceptionHandlingMiddleware
         try
         {
             await _next(context);
+
+            // Handle 401 and 403 set by Authentication/Authorization middleware
+            // This is the most important part for your current 401 issue
+            if (!context.Response.HasStarted)
+            {
+                if (context.Response.StatusCode == (int)HttpStatusCode.Unauthorized)
+                {
+                    _logger.LogWarning("Unauthorized access attempt to {Path}", context.Request.Path);
+
+                    await HandleExceptionAsync(
+                        context,
+                        HttpStatusCode.Unauthorized,
+                        "Unauthorized",
+                        "Invalid or missing authentication token. Please provide a valid Bearer token.");
+                    return;
+                }
+
+                if (context.Response.StatusCode == (int)HttpStatusCode.Forbidden)
+                {
+                    _logger.LogWarning("Forbidden access attempt to {Path}", context.Request.Path);
+
+                    await HandleExceptionAsync(
+                        context,
+                        HttpStatusCode.Forbidden,
+                        "Forbidden",
+                        "You do not have permission to access this resource.");
+                    return;
+                }
+            }
         }
         catch (ArgumentException ex)
         {
@@ -34,7 +64,7 @@ public class ExceptionHandlingMiddleware
         }
         catch (UnauthorizedAccessException ex)
         {
-            _logger.LogWarning("Unauthorized: {Message}", ex.Message);
+            _logger.LogWarning("Unauthorized exception: {Message}", ex.Message);
             await HandleExceptionAsync(
                 context,
                 HttpStatusCode.Unauthorized,
@@ -71,6 +101,10 @@ public class ExceptionHandlingMiddleware
         string error,
         string message)
     {
+        // Prevent writing if response has already started
+        if (context.Response.HasStarted)
+            return;
+
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = (int)statusCode;
 

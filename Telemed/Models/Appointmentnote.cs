@@ -14,5 +14,4 @@ public partial class Appointmentnote
     public DateTime? Createdat { get; set; }
 
     public virtual Appointment? Appointment { get; set; }
-
 }

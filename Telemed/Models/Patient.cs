@@ -71,6 +71,10 @@ public partial class Patient
 
     public virtual ICollection<Message> Messages { get; set; } = new List<Message>();
 
+    public virtual ICollection<Patientalert> Patientalerts { get; set; } = new List<Patientalert>();
+
+    public virtual ICollection<Patientfollowup> Patientfollowups { get; set; } = new List<Patientfollowup>();
+
     public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
 
     public virtual ICollection<Prescription> Prescriptions { get; set; } = new List<Prescription>();

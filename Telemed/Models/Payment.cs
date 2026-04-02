@@ -26,6 +26,4 @@ public partial class Payment
     public virtual Patient Patient { get; set; } = null!;
 
     public virtual Provider Provider { get; set; } = null!;
-
-
 }
