@@ -7,7 +7,7 @@ public partial class Videosession
 {
     public int Videosessionid { get; set; }
 
-    public int Encounterid { get; set; }
+    public long Encounterid { get; set; }
 
     public long Providerid { get; set; }
 

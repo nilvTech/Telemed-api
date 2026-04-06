@@ -35,6 +35,21 @@ public class ProviderController : ControllerBase
         return Ok(result);
     }
 
+    // Create Provider
+
+    [HttpPost]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Create([FromBody] CreateProviderDto dto)
+    {
+        var result = await _service.CreateAsync(dto);
+
+        return CreatedAtAction(
+            nameof(GetById),
+            new { id = result.ProviderId }, // make sure this matches your DTO
+            result
+        );
+    }
+
     [HttpPut("{id}")]
     [Authorize(Roles = "Provider,Admin")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateProviderDto dto)

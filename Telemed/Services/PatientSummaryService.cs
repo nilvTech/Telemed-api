@@ -3,6 +3,7 @@ using Telemed.DTOs;
 using Telemed.Mappers;
 using Telemed.Models;
 using Telemed.Services.Interfaces;
+using System;
 
 namespace Telemed.Services
 {
@@ -23,21 +24,21 @@ namespace Telemed.Services
                     SELECT
                         (SELECT COUNT(DISTINCT patientid)
                          FROM appointment 
-                         WHERE CAST(appointmentdate AS DATE) = CURRENT_DATE) AS ""PatientsToday"",
+                         WHERE DATE(appointmentdate) = CURRENT_DATE) AS ""PatientsToday"",
 
                         (SELECT COUNT(*)
                          FROM consultation 
                          WHERE status = 'Completed' 
-                         AND CAST(createddate AS DATE) = CURRENT_DATE) AS ""ConsultationsCompleted"",
+                         AND DATE(createddate) = CURRENT_DATE) AS ""ConsultationsCompleted"",
 
                         (SELECT COUNT(*)
                          FROM appointment 
-                         WHERE status IN ('CheckedIn', 'Waiting') 
-                         AND CAST(appointmentdate AS DATE) = CURRENT_DATE) AS ""PendingConsultations"",
+                         WHERE status IN ('CheckedIn', 'Waiting', 'onHold', 'Scheduled', 'InProgress')
+                         AND DATE(appointmentdate) = CURRENT_DATE) AS ""PendingConsultations"",
 
                         (SELECT COUNT(*)
                          FROM appointment 
-                         WHERE CAST(appointmentdate AS DATE) = CURRENT_DATE) AS ""TotalAppointments"",
+                         WHERE DATE(appointmentdate) = CURRENT_DATE) AS ""TotalAppointments"",
 
                         (SELECT COUNT(*)
                          FROM patientalert 
@@ -46,24 +47,33 @@ namespace Telemed.Services
 
                         (SELECT COUNT(*)
                          FROM patientfollowup 
-                         WHERE CAST(followupdate AS DATE) = CURRENT_DATE) AS ""FollowupsDueToday""
+                         WHERE DATE(followupdate) = CURRENT_DATE) AS ""FollowupsDueToday""
                 ";
 
-                var result = await _context
-                    .PatientSummaries
+                var result = await _context.PatientSummaries
                     .FromSqlRaw(sql)
                     .AsNoTracking()
                     .FirstOrDefaultAsync();
 
-                return result?.ToDto() ?? new PatientSummaryDto();
+                var dto = result?.ToDto() ?? new PatientSummaryDto();
+
+                // Production-friendly logging
+                Console.WriteLine($"[PatientSummary] PatientsToday: {dto.PatientsToday} | " +
+                                  $"TotalAppts: {dto.TotalAppointments} | " +
+                                  $"Pending: {dto.PendingConsultations} | " +
+                                  $"Completed: {dto.ConsultationsCompleted} | " +
+                                  $"CriticalAlerts: {dto.CriticalAlerts} | " +
+                                  $"FollowupsToday: {dto.FollowupsDueToday}");
+
+                return dto;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[PatientSummary Error] {ex.Message}");
+                Console.WriteLine($"[PatientSummaryService ERROR] {ex.Message}");
                 if (ex.InnerException != null)
                     Console.WriteLine($"Inner: {ex.InnerException.Message}");
 
-                throw;
+                return new PatientSummaryDto();
             }
         }
     }

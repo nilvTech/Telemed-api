@@ -7,7 +7,7 @@ public partial class Vital
 {
     public int Vitalsid { get; set; }
 
-    public int Encounterid { get; set; }
+    public long Encounterid { get; set; }
 
     public long Patientid { get; set; }
 
