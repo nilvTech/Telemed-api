@@ -26,9 +26,10 @@ namespace Telemed.Services
                          FROM appointment 
                          WHERE DATE(appointmentdate) = CURRENT_DATE) AS ""PatientsToday"",
 
+                        -- Changed logic: Count as Completed if status is 'Completed' OR 'onHold'
                         (SELECT COUNT(*)
                          FROM consultation 
-                         WHERE status = 'Completed' 
+                         WHERE status IN ('Completed', 'onHold')
                          AND DATE(createddate) = CURRENT_DATE) AS ""ConsultationsCompleted"",
 
                         (SELECT COUNT(*)
@@ -57,7 +58,7 @@ namespace Telemed.Services
 
                 var dto = result?.ToDto() ?? new PatientSummaryDto();
 
-                // Production-friendly logging
+                // Logging
                 Console.WriteLine($"[PatientSummary] PatientsToday: {dto.PatientsToday} | " +
                                   $"TotalAppts: {dto.TotalAppointments} | " +
                                   $"Pending: {dto.PendingConsultations} | " +

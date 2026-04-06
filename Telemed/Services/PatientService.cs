@@ -44,7 +44,7 @@ public class PatientService : IPatientService
     }
 
     // -------------------- GET BY ID --------------------
-    public async Task<PatientDto?> GetByIdAsync(int id)
+    public async Task<PatientDto?> GetByIdAsync(long id)  // changed int -> long
     {
         var x = await _db.Patients.FindAsync(id);
         if (x == null) return null;
@@ -105,7 +105,7 @@ public class PatientService : IPatientService
     }
 
     // -------------------- UPDATE --------------------
-    public async Task<PatientDto?> UpdateAsync(int id, UpdatePatientDto dto)
+    public async Task<PatientDto?> UpdateAsync(long id, UpdatePatientDto dto)  // changed int -> long
     {
         var entity = await _db.Patients.FindAsync(id);
         if (entity == null)
@@ -143,7 +143,7 @@ public class PatientService : IPatientService
     }
 
     // -------------------- DELETE --------------------
-    public async Task<bool> DeleteAsync(int id)
+    public async Task<bool> DeleteAsync(long id)  // changed int -> long
     {
         var entity = await _db.Patients.FindAsync(id);
         if (entity == null)

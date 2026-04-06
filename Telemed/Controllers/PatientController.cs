@@ -17,17 +17,16 @@ public class PatientController : ControllerBase
         _service = service;
     }
 
-    // Post Patient
+    // ---------------- CREATE PATIENT ----------------
     [HttpPost]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Create([FromBody] CreatePatientDto dto)
     {
         var result = await _service.CreateAsync(dto); // returns PatientDto
-                                                      // Use correct property name PatientId
         return CreatedAtAction(nameof(GetById), new { id = result.PatientId }, result);
     }
 
-    // GET all patients
+    // ---------------- GET ALL PATIENTS ----------------
     [HttpGet]
     [Authorize(Roles = "Admin,Provider")]
     public async Task<IActionResult> GetAll()
@@ -36,10 +35,10 @@ public class PatientController : ControllerBase
         return Ok(result);
     }
 
-    // GET patient by ID
+    // ---------------- GET PATIENT BY ID ----------------
     [HttpGet("{id}")]
     [Authorize(Roles = "Patient,Provider,Admin")]
-    public async Task<IActionResult> GetById(int id)
+    public async Task<IActionResult> GetById(long id)
     {
         var result = await _service.GetByIdAsync(id);
         if (result == null)
@@ -47,10 +46,10 @@ public class PatientController : ControllerBase
         return Ok(result);
     }
 
-    // UPDATE patient
+    // ---------------- UPDATE PATIENT ----------------
     [HttpPut("{id}")]
     [Authorize(Roles = "Patient,Admin")]
-    public async Task<IActionResult> Update(int id, [FromBody] UpdatePatientDto dto)
+    public async Task<IActionResult> Update(long id, [FromBody] UpdatePatientDto dto)
     {
         var result = await _service.UpdateAsync(id, dto);
         if (result == null)
@@ -58,10 +57,10 @@ public class PatientController : ControllerBase
         return Ok(result);
     }
 
-    // DELETE patient
+    // ---------------- DELETE PATIENT ----------------
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Delete(int id)
+    public async Task<IActionResult> Delete(long id)
     {
         var success = await _service.DeleteAsync(id);
         if (!success)

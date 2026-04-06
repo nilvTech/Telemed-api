@@ -27,15 +27,13 @@ public class ProviderController : ControllerBase
 
     [HttpGet("{id}")]
     [Authorize(Roles = "Patient,Provider,Admin")]
-    public async Task<IActionResult> GetById(int id)
+    public async Task<IActionResult> GetById(long id) // long
     {
         var result = await _service.GetByIdAsync(id);
         if (result == null)
             return NotFound(new { error = $"Provider with ID {id} not found." });
         return Ok(result);
     }
-
-    // Create Provider
 
     [HttpPost]
     [Authorize(Roles = "Admin")]
@@ -45,14 +43,14 @@ public class ProviderController : ControllerBase
 
         return CreatedAtAction(
             nameof(GetById),
-            new { id = result.ProviderId }, // make sure this matches your DTO
+            new { id = result.ProviderId }, // ensure DTO has ProviderId as long
             result
         );
     }
 
     [HttpPut("{id}")]
     [Authorize(Roles = "Provider,Admin")]
-    public async Task<IActionResult> Update(int id, [FromBody] UpdateProviderDto dto)
+    public async Task<IActionResult> Update(long id, [FromBody] UpdateProviderDto dto) // long
     {
         var result = await _service.UpdateAsync(id, dto);
         if (result == null)
@@ -62,11 +60,11 @@ public class ProviderController : ControllerBase
 
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Delete(int id)
+    public async Task<IActionResult> Delete(long id) // long
     {
         var success = await _service.DeleteAsync(id);
         if (!success)
             return NotFound(new { error = $"Provider with ID {id} not found." });
         return NoContent();
     }
-}
+}   

@@ -21,7 +21,7 @@ public class ProviderService : IProviderService
         return list.Select(x => x.ToDto()).ToList();
     }
 
-    public async Task<ProviderDto?> GetByIdAsync(int id)
+    public async Task<ProviderDto?> GetByIdAsync(long id) // long
     {
         var p = await _db.Providers.FindAsync(id);
         return p?.ToDto();
@@ -36,7 +36,7 @@ public class ProviderService : IProviderService
         return entity.ToDto();
     }
 
-    public async Task<ProviderDto?> UpdateAsync(int id, UpdateProviderDto dto)
+    public async Task<ProviderDto?> UpdateAsync(long id, UpdateProviderDto dto) // long
     {
         var entity = await _db.Providers.FindAsync(id);
         if (entity == null)
@@ -50,14 +50,14 @@ public class ProviderService : IProviderService
         entity.Website = dto.Website;
         entity.Primaryaddress = dto.PrimaryAddress;
         entity.Status = dto.Status;
-        entity.Updatedat = DateTime.UtcNow;
+        entity.Updatedat = DateTime.UtcNow; // make sure your entity has this column
 
         await _db.SaveChangesAsync();
 
         return entity.ToDto();
     }
 
-    public async Task<bool> DeleteAsync(int id)
+    public async Task<bool> DeleteAsync(long id) // long
     {
         var p = await _db.Providers.FindAsync(id);
         if (p == null)
