@@ -14,56 +14,43 @@ public class PatientService : IPatientService
         _db = db;
     }
 
-    // Helper conversions
+    // -------------------- HELPERS --------------------
     private DateTime? ToDateTime(DateOnly? d) =>
         d.HasValue ? d.Value.ToDateTime(TimeOnly.MinValue) : null;
 
     private DateOnly? ToDateOnly(DateTime? d) =>
         d.HasValue ? DateOnly.FromDateTime(d.Value) : null;
 
+    private PatientDto MapToDto(Patient x) => new PatientDto
+    {
+        PatientId = x.Patientid,
+        FirstName = x.Firstname,
+        LastName = x.Lastname,
+        MiddleName = x.Middlename,
+        Gender = x.Gender,
+        Email = x.Email,
+        Phone = x.Phone,
+        DateOfBirth = ToDateTime(x.Dateofbirth),
+        Address = x.Address,
+        Language = x.Language,
+        MaritalStatus = x.Maritalstatus,
+        MRN = x.Mrn
+    };
+
     // -------------------- GET ALL --------------------
     public async Task<List<PatientDto>> GetAllAsync()
     {
         var list = await _db.Patients.ToListAsync();
-
-        return list.Select(x => new PatientDto
-        {
-            PatientId = x.Patientid,
-            FirstName = x.Firstname,
-            LastName = x.Lastname,
-            MiddleName = x.Middlename,
-            Gender = x.Gender,
-            Email = x.Email,
-            Phone = x.Phone,
-            DateOfBirth = ToDateTime(x.Dateofbirth),
-            Address = x.Address,
-            Language = x.Language,
-            MaritalStatus = x.Maritalstatus,
-            MRN = x.Mrn
-        }).ToList();
+        return list.Select(MapToDto).ToList();
     }
 
     // -------------------- GET BY ID --------------------
-    public async Task<PatientDto?> GetByIdAsync(long id)  // changed int -> long
+    public async Task<PatientDto?> GetByIdAsync(long id)
     {
         var x = await _db.Patients.FindAsync(id);
         if (x == null) return null;
 
-        return new PatientDto
-        {
-            PatientId = x.Patientid,
-            FirstName = x.Firstname,
-            LastName = x.Lastname,
-            MiddleName = x.Middlename,
-            Gender = x.Gender,
-            Email = x.Email,
-            Phone = x.Phone,
-            DateOfBirth = ToDateTime(x.Dateofbirth),
-            Address = x.Address,
-            Language = x.Language,
-            MaritalStatus = x.Maritalstatus,
-            MRN = x.Mrn
-        };
+        return MapToDto(x);
     }
 
     // -------------------- CREATE --------------------
@@ -87,29 +74,14 @@ public class PatientService : IPatientService
         _db.Patients.Add(entity);
         await _db.SaveChangesAsync();
 
-        return new PatientDto
-        {
-            PatientId = entity.Patientid,
-            FirstName = entity.Firstname,
-            LastName = entity.Lastname,
-            MiddleName = entity.Middlename,
-            Gender = entity.Gender,
-            Email = entity.Email,
-            Phone = entity.Phone,
-            DateOfBirth = ToDateTime(entity.Dateofbirth),
-            Address = entity.Address,
-            Language = entity.Language,
-            MaritalStatus = entity.Maritalstatus,
-            MRN = entity.Mrn
-        };
+        return MapToDto(entity);
     }
 
     // -------------------- UPDATE --------------------
-    public async Task<PatientDto?> UpdateAsync(long id, UpdatePatientDto dto)  // changed int -> long
+    public async Task<PatientDto?> UpdateAsync(long id, UpdatePatientDto dto)
     {
         var entity = await _db.Patients.FindAsync(id);
-        if (entity == null)
-            return null;
+        if (entity == null) return null;
 
         entity.Firstname = dto.FirstName;
         entity.Middlename = dto.MiddleName;
@@ -125,29 +97,14 @@ public class PatientService : IPatientService
 
         await _db.SaveChangesAsync();
 
-        return new PatientDto
-        {
-            PatientId = entity.Patientid,
-            FirstName = entity.Firstname,
-            LastName = entity.Lastname,
-            MiddleName = entity.Middlename,
-            Gender = entity.Gender,
-            Email = entity.Email,
-            Phone = entity.Phone,
-            DateOfBirth = ToDateTime(entity.Dateofbirth),
-            Address = entity.Address,
-            Language = entity.Language,
-            MaritalStatus = entity.Maritalstatus,
-            MRN = entity.Mrn
-        };
+        return MapToDto(entity);
     }
 
     // -------------------- DELETE --------------------
-    public async Task<bool> DeleteAsync(long id)  // changed int -> long
+    public async Task<bool> DeleteAsync(long id)
     {
         var entity = await _db.Patients.FindAsync(id);
-        if (entity == null)
-            return false;
+        if (entity == null) return false;
 
         _db.Patients.Remove(entity);
         await _db.SaveChangesAsync();

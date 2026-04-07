@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using Telemed.DTOs;
 using Telemed.Services.Interfaces;
 
@@ -22,7 +23,7 @@ public class PatientController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Create([FromBody] CreatePatientDto dto)
     {
-        var result = await _service.CreateAsync(dto); // returns PatientDto
+        var result = await _service.CreateAsync(dto);
         return CreatedAtAction(nameof(GetById), new { id = result.PatientId }, result);
     }
 
@@ -40,9 +41,19 @@ public class PatientController : ControllerBase
     [Authorize(Roles = "Patient,Provider,Admin")]
     public async Task<IActionResult> GetById(long id)
     {
+        // Patients can only view their own record
+        if (User.IsInRole("Patient"))
+        {
+            var claimValue = User.FindFirst("ReferenceId")?.Value;
+
+            if (!long.TryParse(claimValue, out var tokenPatientId) || tokenPatientId != id)
+                return Forbid();
+        }
+
         var result = await _service.GetByIdAsync(id);
         if (result == null)
             return NotFound(new { error = $"Patient with ID {id} not found." });
+
         return Ok(result);
     }
 
@@ -51,9 +62,19 @@ public class PatientController : ControllerBase
     [Authorize(Roles = "Patient,Admin")]
     public async Task<IActionResult> Update(long id, [FromBody] UpdatePatientDto dto)
     {
+        // Patients can only update their own record
+        if (User.IsInRole("Patient"))
+        {
+            var claimValue = User.FindFirst("ReferenceId")?.Value;
+
+            if (!long.TryParse(claimValue, out var tokenPatientId) || tokenPatientId != id)
+                return Forbid();
+        }
+
         var result = await _service.UpdateAsync(id, dto);
         if (result == null)
             return NotFound(new { error = $"Patient with ID {id} not found." });
+
         return Ok(result);
     }
 
@@ -65,6 +86,7 @@ public class PatientController : ControllerBase
         var success = await _service.DeleteAsync(id);
         if (!success)
             return NotFound(new { error = $"Patient with ID {id} not found." });
+
         return NoContent();
     }
 }

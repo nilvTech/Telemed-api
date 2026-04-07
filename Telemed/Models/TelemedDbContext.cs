@@ -33,6 +33,8 @@ namespace Telemed.Models
         public virtual DbSet<Videosession> Videosessions { get; set; }
         public virtual DbSet<Vital> Vitals { get; set; }
 
+        public virtual DbSet<Filemaster> Filemasters { get; set; }
+
         // ====================== Keyless DTO for Patient Summary ======================
         public virtual DbSet<PatientSummaryDto> PatientSummaries { get; set; } = null!;
 
@@ -765,6 +767,42 @@ namespace Telemed.Models
                 entity.HasNoKey();        // DTO has no primary key
                 entity.ToView(null);      // Not mapped to any table
             });
+
+            //========== Filemaster===========================================================
+
+            modelBuilder.Entity<Filemaster>(entity =>
+            {
+                entity.HasKey(e => e.Fileid).HasName("filemaster_pkey");
+
+                entity.ToTable("filemaster");
+
+                entity.Property(e => e.Fileid).HasColumnName("fileid");
+                entity.Property(e => e.Createdby).HasColumnName("createdby");
+                entity.Property(e => e.Createddate)
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                    .HasColumnType("timestamp without time zone")
+                    .HasColumnName("createddate");
+                entity.Property(e => e.Filename)
+                    .HasMaxLength(255)
+                    .HasColumnName("filename");
+                entity.Property(e => e.Filetype)
+                    .HasMaxLength(50)
+                    .HasColumnName("filetype");
+                entity.Property(e => e.Iscompleted)
+                    .HasDefaultValue(false)
+                    .HasColumnName("iscompleted");
+                entity.Property(e => e.Patientid).HasColumnName("patientid");
+                entity.Property(e => e.Totalchunks).HasColumnName("totalchunks");
+                entity.Property(e => e.Totalsize).HasColumnName("totalsize");
+                entity.Property(e => e.Updatedby).HasColumnName("updatedby");
+                entity.Property(e => e.Updateddate)
+                    .HasColumnType("timestamp without time zone")
+                    .HasColumnName("updateddate");
+                entity.Property(e => e.Uploadedchunks)
+                    .HasDefaultValue(0)
+                    .HasColumnName("uploadedchunks");
+            });
+        
 
             OnModelCreatingPartial(modelBuilder);
         }

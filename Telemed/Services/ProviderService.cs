@@ -15,18 +15,21 @@ public class ProviderService : IProviderService
         _db = db;
     }
 
+    // -------------------- GET ALL --------------------
     public async Task<List<ProviderDto>> GetAllAsync()
     {
         var list = await _db.Providers.ToListAsync();
         return list.Select(x => x.ToDto()).ToList();
     }
 
-    public async Task<ProviderDto?> GetByIdAsync(long id) // long
+    // -------------------- GET BY ID --------------------
+    public async Task<ProviderDto?> GetByIdAsync(long id)
     {
         var p = await _db.Providers.FindAsync(id);
         return p?.ToDto();
     }
 
+    // -------------------- CREATE --------------------
     public async Task<ProviderDto> CreateAsync(CreateProviderDto dto)
     {
         var entity = dto.ToEntity();
@@ -36,13 +39,12 @@ public class ProviderService : IProviderService
         return entity.ToDto();
     }
 
-    public async Task<ProviderDto?> UpdateAsync(long id, UpdateProviderDto dto) // long
+    // -------------------- UPDATE --------------------
+    public async Task<ProviderDto?> UpdateAsync(long id, UpdateProviderDto dto)
     {
         var entity = await _db.Providers.FindAsync(id);
-        if (entity == null)
-            return null;
+        if (entity == null) return null;
 
-        // Update fields
         entity.Providername = dto.ProviderName;
         entity.Email = dto.Email;
         entity.Phone = dto.Phone;
@@ -50,18 +52,18 @@ public class ProviderService : IProviderService
         entity.Website = dto.Website;
         entity.Primaryaddress = dto.PrimaryAddress;
         entity.Status = dto.Status;
-        entity.Updatedat = DateTime.UtcNow; // make sure your entity has this column
+        entity.Updatedat = DateTime.UtcNow;
 
         await _db.SaveChangesAsync();
 
         return entity.ToDto();
     }
 
-    public async Task<bool> DeleteAsync(long id) // long
+    // -------------------- DELETE --------------------
+    public async Task<bool> DeleteAsync(long id)
     {
         var p = await _db.Providers.FindAsync(id);
-        if (p == null)
-            return false;
+        if (p == null) return false;
 
         _db.Providers.Remove(p);
         await _db.SaveChangesAsync();

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Telemed.DTOs;
 using Telemed.Services.Interfaces;
 
+
 namespace Telemed.Controllers
 {
     [ApiController]
