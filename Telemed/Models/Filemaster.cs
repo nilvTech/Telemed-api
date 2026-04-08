@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 
-
 namespace Telemed.Models;
 
 public partial class Filemaster
@@ -29,4 +28,6 @@ public partial class Filemaster
     public long? Updatedby { get; set; }
 
     public DateTime? Updateddate { get; set; }
+
+    public List<byte[]>? Pdfcontent { get; set; }
 }

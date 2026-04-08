@@ -32,8 +32,10 @@ namespace Telemed.Models
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<Videosession> Videosessions { get; set; }
         public virtual DbSet<Vital> Vitals { get; set; }
-
         public virtual DbSet<Filemaster> Filemasters { get; set; }
+        public virtual DbSet<Providerinfo> Providerinfos { get; set; }
+
+        public virtual DbSet<Providerprofile> Providerprofiles { get; set; }
 
         // ====================== Keyless DTO for Patient Summary ======================
         public virtual DbSet<PatientSummaryDto> PatientSummaries { get; set; } = null!;
@@ -792,6 +794,7 @@ namespace Telemed.Models
                     .HasDefaultValue(false)
                     .HasColumnName("iscompleted");
                 entity.Property(e => e.Patientid).HasColumnName("patientid");
+                entity.Property(e => e.Pdfcontent).HasColumnName("pdfcontent");
                 entity.Property(e => e.Totalchunks).HasColumnName("totalchunks");
                 entity.Property(e => e.Totalsize).HasColumnName("totalsize");
                 entity.Property(e => e.Updatedby).HasColumnName("updatedby");
@@ -802,7 +805,135 @@ namespace Telemed.Models
                     .HasDefaultValue(0)
                     .HasColumnName("uploadedchunks");
             });
-        
+
+            //===============Providerinfo&providerprofile===================//
+
+            modelBuilder.Entity<Providerinfo>(entity =>
+            {
+                entity.HasKey(e => e.Providerinfoid).HasName("providerinfo_pkey");
+
+                entity.ToTable("providerinfo");
+
+                entity.HasIndex(e => e.Email, "idx_provider_email");
+
+                entity.HasIndex(e => e.Email, "providerinfo_email_key").IsUnique();
+
+                entity.Property(e => e.Providerinfoid).HasColumnName("providerinfoid");
+                entity.Property(e => e.Createdat)
+                    .HasDefaultValueSql("now()")
+                    .HasColumnName("createdat");
+                entity.Property(e => e.Createdby).HasColumnName("createdby");
+                entity.Property(e => e.Displayname)
+                    .HasMaxLength(150)
+                    .HasColumnName("displayname");
+                entity.Property(e => e.Email)
+                    .HasMaxLength(150)
+                    .HasColumnName("email");
+                entity.Property(e => e.Firstname)
+                    .HasMaxLength(100)
+                    .HasColumnName("firstname");
+                entity.Property(e => e.Gender)
+                    .HasMaxLength(20)
+                    .HasColumnName("gender");
+                entity.Property(e => e.Lastname)
+                    .HasMaxLength(100)
+                    .HasColumnName("lastname");
+                entity.Property(e => e.Phone)
+                    .HasMaxLength(20)
+                    .HasColumnName("phone");
+                entity.Property(e => e.Profilepicture).HasColumnName("profilepicture");
+                entity.Property(e => e.Role)
+                    .HasMaxLength(50)
+                    .HasDefaultValueSql("'Provider'::character varying")
+                    .HasColumnName("role");
+                entity.Property(e => e.Updatedat)
+                    .HasDefaultValueSql("now()")
+                    .HasColumnName("updatedat");
+                entity.Property(e => e.Updatedby).HasColumnName("updatedby");
+            });
+
+            //======= Providerprofile=====//
+
+            modelBuilder.Entity<Providerprofile>(entity =>
+            {
+                entity.HasKey(e => e.Profileid).HasName("providerprofile_pkey");
+
+                entity.ToTable("providerprofile");
+
+                entity.HasIndex(e => new { e.City, e.State }, "idx_providerprofile_location");
+
+                entity.HasIndex(e => e.NpiNumber, "idx_providerprofile_npi");
+
+                entity.HasIndex(e => new { e.Speciality1, e.Speciality2 }, "idx_providerprofile_speciality");
+
+                entity.HasIndex(e => e.NpiNumber, "providerprofile_npi_number_key").IsUnique();
+
+                entity.HasIndex(e => e.Providerinfoid, "providerprofile_providerinfoid_key").IsUnique();
+
+                entity.Property(e => e.Profileid).HasColumnName("profileid");
+                entity.Property(e => e.Addressline1)
+                    .HasMaxLength(200)
+                    .HasColumnName("addressline1");
+                entity.Property(e => e.Addressline2)
+                    .HasMaxLength(200)
+                    .HasColumnName("addressline2");
+                entity.Property(e => e.Bio).HasColumnName("bio");
+                entity.Property(e => e.City)
+                    .HasMaxLength(100)
+                    .HasColumnName("city");
+                entity.Property(e => e.Country)
+                    .HasMaxLength(100)
+                    .HasDefaultValueSql("'United States'::character varying")
+                    .HasColumnName("country");
+                entity.Property(e => e.Createdat)
+                    .HasDefaultValueSql("now()")
+                    .HasColumnName("createdat");
+                entity.Property(e => e.Createdby).HasColumnName("createdby");
+                entity.Property(e => e.Isactive)
+                    .HasDefaultValue(true)
+                    .HasColumnName("isactive");
+                entity.Property(e => e.Licensenumber)
+                    .HasMaxLength(100)
+                    .HasColumnName("licensenumber");
+                entity.Property(e => e.NpiNumber)
+                    .HasMaxLength(50)
+                    .HasColumnName("npi_number");
+                entity.Property(e => e.Providerinfoid).HasColumnName("providerinfoid");
+                entity.Property(e => e.Providertype)
+                    .HasMaxLength(100)
+                    .HasColumnName("providertype");
+                entity.Property(e => e.Secondaryrole)
+                    .HasMaxLength(100)
+                    .HasColumnName("secondaryrole");
+                entity.Property(e => e.Speciality1)
+                    .HasMaxLength(150)
+                    .HasColumnName("speciality1");
+                entity.Property(e => e.Speciality2)
+                    .HasMaxLength(150)
+                    .HasColumnName("speciality2");
+                entity.Property(e => e.State)
+                    .HasMaxLength(50)
+                    .HasColumnName("state");
+                entity.Property(e => e.Timezone)
+                    .HasMaxLength(100)
+                    .HasColumnName("timezone");
+                entity.Property(e => e.Updatedat)
+                    .HasDefaultValueSql("now()")
+                    .HasColumnName("updatedat");
+                entity.Property(e => e.Updatedby).HasColumnName("updatedby");
+                entity.Property(e => e.Website)
+                    .HasMaxLength(200)
+                    .HasColumnName("website");
+                entity.Property(e => e.Yearofexperience).HasColumnName("yearofexperience");
+                entity.Property(e => e.Zip)
+                    .HasMaxLength(20)
+                    .HasColumnName("zip");
+
+                entity.HasOne(d => d.Providerinfo).WithOne(p => p.Providerprofile)
+                    .HasForeignKey<Providerprofile>(d => d.Providerinfoid)
+                    .HasConstraintName("fk_providerprofile_providerinfo");
+            });
+
 
             OnModelCreatingPartial(modelBuilder);
         }

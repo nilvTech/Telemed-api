@@ -11,6 +11,9 @@ public class FilemasterService : IFilemasterService
 {
     private readonly TelemedDbContext _context;
 
+    // 1MB per chunk
+    private const int ChunkSize = 1024 * 1024;
+
     public FilemasterService(TelemedDbContext context)
     {
         _context = context;
@@ -24,46 +27,48 @@ public class FilemasterService : IFilemasterService
             .FirstOrDefaultAsync(p => p.Patientid == patientId.Value);
     }
 
+    // Helper to validate file type
+    private static readonly string[] ValidFileTypes = new[]
+    {
+        "pdf", "jpg", "jpeg", "png", "gif",
+        "doc", "docx", "xls", "xlsx",
+        "mp4", "mov", "avi",
+        "dicom", "dcm", "hl7", "xml", "txt",
+        "zip", "csv"
+    };
+
+    private static string FormatSize(long bytes)
+    {
+        if (bytes < 1024) return $"{bytes} B";
+        if (bytes < 1024 * 1024) return $"{bytes / 1024.0:F1} KB";
+        return $"{bytes / (1024.0 * 1024):F1} MB";
+    }
+
     public async Task<FilemasterResponseDto> CreateAsync(CreateFilemasterDto dto)
     {
-        // Validate Patient exists if provided
+        // Validate Patient
         if (dto.Patientid.HasValue)
         {
-            var patientExists = await _context.Patients
+            var exists = await _context.Patients
                 .AnyAsync(p => p.Patientid == dto.Patientid);
-            if (!patientExists)
+            if (!exists)
                 throw new ArgumentException(
                     $"Patient with ID {dto.Patientid} does not exist.");
         }
 
-        // Validate Filename
         if (string.IsNullOrWhiteSpace(dto.Filename))
             throw new ArgumentException("Filename cannot be empty.");
 
-        // Validate FileType
-        var validFileTypes = new[]
-        {
-            "pdf", "jpg", "jpeg", "png", "gif",
-            "doc", "docx", "xls", "xlsx",
-            "mp4", "mov", "avi",
-            "dicom", "dcm", "hl7", "xml", "txt",
-            "zip", "csv"
-        };
-        if (!validFileTypes.Contains(dto.Filetype.ToLower()))
+        if (!ValidFileTypes.Contains(dto.Filetype.ToLower()))
             throw new ArgumentException(
-                "Invalid file type. Allowed: pdf, jpg, jpeg, png, gif, " +
-                "doc, docx, xls, xlsx, mp4, mov, avi, " +
-                "dicom, dcm, hl7, xml, txt, zip, csv.");
+                $"Invalid file type. Allowed: {string.Join(", ", ValidFileTypes)}.");
 
-        // Validate file size (max 500MB)
         if (dto.Totalsize <= 0)
             throw new ArgumentException("File size must be greater than 0.");
 
         if (dto.Totalsize > 500L * 1024 * 1024)
-            throw new ArgumentException(
-                "File size cannot exceed 500MB.");
+            throw new ArgumentException("File size cannot exceed 500MB.");
 
-        // Validate chunks
         if (dto.Totalchunks <= 0)
             throw new ArgumentException("Total chunks must be greater than 0.");
 
@@ -110,7 +115,6 @@ public class FilemasterService : IFilemasterService
             .ToListAsync();
 
         var patient = await GetPatientAsync(patientId);
-
         return list.Select(f => FilemasterMapper.ToResponseDto(f, patient));
     }
 
@@ -178,8 +182,8 @@ public class FilemasterService : IFilemasterService
         return FilemasterMapper.ToResponseDto(entity, patient);
     }
 
-    // Track chunk upload progress
-    public async Task<FilemasterResponseDto?> UpdateChunkAsync(UploadChunkDto dto)
+    // ✅ Upload single chunk — saves chunk bytes to Pdfcontent list in DB
+    public async Task<FilemasterResponseDto?> UploadChunkAsync(UploadChunkDto dto)
     {
         var entity = await _context.Filemasters
             .FirstOrDefaultAsync(f => f.Fileid == dto.Fileid);
@@ -194,10 +198,25 @@ public class FilemasterService : IFilemasterService
             throw new ArgumentException(
                 $"Invalid chunk number. Must be between 1 and {entity.Totalchunks}.");
 
-        // Increment uploaded chunks
-        entity.Uploadedchunks = (entity.Uploadedchunks ?? 0) + 1;
+        // Validate chunk file provided
+        if (dto.Chunkdata == null || dto.Chunkdata.Length == 0)
+            throw new ArgumentException("Chunk data cannot be empty.");
 
-        // Auto mark complete if all chunks uploaded
+        // Read chunk bytes
+        using var memoryStream = new MemoryStream();
+        await dto.Chunkdata.CopyToAsync(memoryStream);
+        var chunkBytes = memoryStream.ToArray();
+
+        // Initialize list if null
+        entity.Pdfcontent ??= new List<byte[]>();
+
+        // Add chunk bytes to Pdfcontent list
+        entity.Pdfcontent.Add(chunkBytes);
+
+        // Update chunk count
+        entity.Uploadedchunks = entity.Pdfcontent.Count;
+
+        // Auto complete when all chunks received
         if (entity.Uploadedchunks >= entity.Totalchunks)
             entity.Iscompleted = true;
 
@@ -211,7 +230,137 @@ public class FilemasterService : IFilemasterService
         return FilemasterMapper.ToResponseDto(entity, patient);
     }
 
-    // Manually mark file upload as complete
+    // ✅ Full file upload — reads file, splits into chunks, saves all to DB
+    public async Task<FileUploadResponseDto> UploadRealFileAsync(
+        RealFileUploadDto dto)
+    {
+        // Validate file
+        if (dto.File == null || dto.File.Length == 0)
+            throw new ArgumentException("No file provided.");
+
+        // Validate Patient
+        Patient? patient = null;
+        if (dto.Patientid.HasValue)
+        {
+            patient = await _context.Patients
+                .FirstOrDefaultAsync(p => p.Patientid == dto.Patientid);
+            if (patient == null)
+                throw new ArgumentException(
+                    $"Patient with ID {dto.Patientid} does not exist.");
+        }
+
+        // Validate file type
+        var extension = Path.GetExtension(dto.File.FileName)
+            .TrimStart('.').ToLower();
+        if (!ValidFileTypes.Contains(extension))
+            throw new ArgumentException(
+                $"Invalid file type '{extension}'. " +
+                $"Allowed: {string.Join(", ", ValidFileTypes)}.");
+
+        // Validate file size max 500MB
+        if (dto.File.Length > 500L * 1024 * 1024)
+            throw new ArgumentException("File size cannot exceed 500MB.");
+
+        // Read entire file into memory
+        using var fileStream = new MemoryStream();
+        await dto.File.CopyToAsync(fileStream);
+        var fileBytes = fileStream.ToArray();
+
+        // Split file into chunks of 1MB each
+        var chunks = new List<byte[]>();
+        var totalBytes = fileBytes.Length;
+        var offset = 0;
+
+        while (offset < totalBytes)
+        {
+            var remainingBytes = totalBytes - offset;
+            var currentChunkSize = Math.Min(ChunkSize, remainingBytes);
+            var chunk = new byte[currentChunkSize];
+            Array.Copy(fileBytes, offset, chunk, 0, currentChunkSize);
+            chunks.Add(chunk);
+            offset += currentChunkSize;
+        }
+
+        // Create Filemaster record with all chunks stored
+        var entity = new Filemaster
+        {
+            Patientid = dto.Patientid,
+            Filename = dto.File.FileName,
+            Filetype = extension,
+            Totalsize = dto.File.Length,
+            Totalchunks = chunks.Count,
+            Uploadedchunks = chunks.Count,  // All chunks uploaded
+            Iscompleted = true,           // Fully uploaded
+            Pdfcontent = chunks,         // ✅ All chunks stored in DB
+            Createdby = dto.Createdby,
+            Createddate = DateTime.SpecifyKind(
+                DateTime.UtcNow, DateTimeKind.Unspecified),
+            Updateddate = DateTime.SpecifyKind(
+                DateTime.UtcNow, DateTimeKind.Unspecified)
+        };
+
+        _context.Filemasters.Add(entity);
+        await _context.SaveChangesAsync();
+
+        return new FileUploadResponseDto
+        {
+            Fileid = entity.Fileid,
+            Patientname = patient != null
+                                    ? $"{patient.Firstname} {patient.Middlename} {patient.Lastname}"
+                                      .Replace("  ", " ").Trim()
+                                    : null,
+            Mrn = patient?.Mrn,
+            Filename = entity.Filename,
+            Filetype = entity.Filetype,
+            Totalsize = entity.Totalsize,
+            Filesizeformatted = FormatSize(entity.Totalsize),
+            Totalchunks = entity.Totalchunks,
+            Uploadedchunks = entity.Uploadedchunks ?? 0,
+            Uploadprogresspercent = 100,
+            Iscompleted = true,
+            Storedchunkcount = chunks.Count,
+            Createddate = entity.Createddate
+        };
+    }
+
+    // ✅ Download — merges all chunks from DB into single byte array
+    public async Task<FileDownloadResponseDto?> DownloadFileAsync(long id)
+    {
+        var entity = await _context.Filemasters
+            .FirstOrDefaultAsync(f => f.Fileid == id);
+
+        if (entity == null) return null;
+
+        if (entity.Iscompleted == false)
+            throw new ArgumentException(
+                "File upload is not yet completed. Cannot download.");
+
+        if (entity.Pdfcontent == null || entity.Pdfcontent.Count == 0)
+            throw new ArgumentException(
+                "No file data found in database for this record.");
+
+        // Merge all chunks into single byte array
+        var totalSize = entity.Pdfcontent.Sum(c => c.Length);
+        var mergedFile = new byte[totalSize];
+        var position = 0;
+
+        foreach (var chunk in entity.Pdfcontent)
+        {
+            Array.Copy(chunk, 0, mergedFile, position, chunk.Length);
+            position += chunk.Length;
+        }
+
+        return new FileDownloadResponseDto
+        {
+            Fileid = entity.Fileid,
+            Filename = entity.Filename,
+            Filetype = entity.Filetype,
+            Filedata = mergedFile,
+            Totalsize = entity.Totalsize,
+            Filesizeformatted = FormatSize(entity.Totalsize)
+        };
+    }
+
     public async Task<FilemasterResponseDto?> MarkCompleteAsync(
         long id, long? updatedby)
     {
@@ -240,118 +389,5 @@ public class FilemasterService : IFilemasterService
         _context.Filemasters.Remove(entity);
         await _context.SaveChangesAsync();
         return true;
-    }
-
-    // Add to FilemasterService.cs
-    public async Task<FileUploadResponseDto> UploadRealFileAsync(RealFileUploadDto dto)
-    {
-        // Validate file provided
-        if (dto.File == null || dto.File.Length == 0)
-            throw new ArgumentException("No file provided.");
-
-        // Validate Patient if provided
-        Patient? patient = null;
-        if (dto.Patientid.HasValue)
-        {
-            patient = await _context.Patients
-                .FirstOrDefaultAsync(p => p.Patientid == dto.Patientid);
-            if (patient == null)
-                throw new ArgumentException(
-                    $"Patient with ID {dto.Patientid} does not exist.");
-        }
-
-        // Validate file type
-        var extension = Path.GetExtension(dto.File.FileName)
-            .TrimStart('.').ToLower();
-        var validFileTypes = new[]
-        {
-        "pdf", "jpg", "jpeg", "png", "gif",
-        "doc", "docx", "xls", "xlsx",
-        "mp4", "mov", "avi",
-        "dicom", "dcm", "hl7", "xml", "txt",
-        "zip", "csv"
-    };
-        if (!validFileTypes.Contains(extension))
-            throw new ArgumentException(
-                $"Invalid file type '{extension}'. " +
-                "Allowed: pdf, jpg, jpeg, png, gif, doc, docx, " +
-                "xls, xlsx, mp4, dicom, txt, zip, csv.");
-
-        // Validate file size max 500MB
-        if (dto.File.Length > 500L * 1024 * 1024)
-            throw new ArgumentException("File size cannot exceed 500MB.");
-
-        // Create upload directory
-        var uploadFolder = Path.Combine(
-            Directory.GetCurrentDirectory(),
-            "Uploads",
-            "PatientFiles",
-            dto.Patientid?.ToString() ?? "general");
-
-        Directory.CreateDirectory(uploadFolder);
-
-        // Generate unique filename to avoid conflicts
-        var uniqueFilename = $"{Guid.NewGuid()}_{dto.File.FileName}";
-        var filePath = Path.Combine(uploadFolder, uniqueFilename);
-
-        // Save file to disk
-        using (var stream = new FileStream(filePath, FileMode.Create))
-        {
-            await dto.File.CopyToAsync(stream);
-        }
-
-        // Calculate chunks (1MB per chunk)
-        var chunkSize = 1024 * 1024; // 1MB
-        var totalChunks = (int)Math.Ceiling(
-            (double)dto.File.Length / chunkSize);
-
-        // Create Filemaster record
-        var entity = new Filemaster
-        {
-            Patientid = dto.Patientid,
-            Filename = dto.File.FileName,
-            Filetype = extension,
-            Totalsize = dto.File.Length,
-            Totalchunks = totalChunks,
-            Uploadedchunks = totalChunks,   // All chunks done — real upload
-            Iscompleted = true,           // File fully uploaded
-            Createdby = dto.Createdby,
-            Createddate = DateTime.SpecifyKind(
-                DateTime.UtcNow, DateTimeKind.Unspecified),
-            Updateddate = DateTime.SpecifyKind(
-                DateTime.UtcNow, DateTimeKind.Unspecified)
-        };
-
-        _context.Filemasters.Add(entity);
-        await _context.SaveChangesAsync();
-
-        // Format size
-        string sizeFormatted;
-        if (entity.Totalsize < 1024)
-            sizeFormatted = $"{entity.Totalsize} B";
-        else if (entity.Totalsize < 1024 * 1024)
-            sizeFormatted = $"{entity.Totalsize / 1024.0:F1} KB";
-        else
-            sizeFormatted = $"{entity.Totalsize / (1024.0 * 1024):F1} MB";
-
-        return new FileUploadResponseDto
-        {
-            Fileid = entity.Fileid,
-            Patientname = patient != null
-                                    ? $"{patient.Firstname} {patient.Middlename} {patient.Lastname}"
-                                      .Replace("  ", " ").Trim()
-                                    : null,
-            Mrn = patient?.Mrn,
-            Filename = entity.Filename,
-            Filetype = entity.Filetype,
-            Totalsize = entity.Totalsize,
-            Filesizeformatted = sizeFormatted,
-            Totalchunks = entity.Totalchunks,
-            Uploadedchunks = entity.Uploadedchunks ?? 0,
-            Uploadprogresspercent = 100,
-            Iscompleted = true,
-            Savedpath = filePath,
-            Createddate = entity.Createddate
-        };
     }
 }

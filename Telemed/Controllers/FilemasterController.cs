@@ -19,6 +19,7 @@ public class FilemasterController : ControllerBase
     }
 
     // POST api/Filemaster
+    // Step 1 of chunked upload — register file metadata
     [HttpPost]
     [Authorize(Roles = "Patient,Provider,Admin")]
     public async Task<IActionResult> Create([FromBody] CreateFilemasterDto dto)
@@ -111,16 +112,66 @@ public class FilemasterController : ControllerBase
         return Ok(result);
     }
 
-    // PATCH api/Filemaster/chunk
-    // Called after each chunk is uploaded
-    [HttpPatch("chunk")]
+    // POST api/Filemaster/upload
+    // Direct full file upload — splits into chunks automatically
+    // Saves all chunks to DB Pdfcontent field
+    [HttpPost("upload")]
     [Authorize(Roles = "Patient,Provider,Admin")]
-    public async Task<IActionResult> UpdateChunk([FromBody] UploadChunkDto dto)
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> Upload([FromForm] RealFileUploadDto dto)
     {
-        var result = await _service.UpdateChunkAsync(dto);
+        var result = await _service.UploadRealFileAsync(dto);
+        return Ok(result);
+    }
+
+    // POST api/Filemaster/chunk
+    // Step 2 of chunked upload — upload one chunk at a time
+    // Each chunk saved to DB Pdfcontent list
+    [HttpPost("chunk")]
+    [Authorize(Roles = "Patient,Provider,Admin")]
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> UploadChunk([FromForm] UploadChunkDto dto)
+    {
+        var result = await _service.UploadChunkAsync(dto);
         if (result == null)
             return NotFound(new { error = $"File with ID {dto.Fileid} not found." });
         return Ok(result);
+    }
+
+    // GET api/Filemaster/5/download
+    // Download file — merges all DB chunks into single file
+    [HttpGet("{id}/download")]
+    [Authorize(Roles = "Patient,Provider,Admin")]
+    public async Task<IActionResult> Download(long id)
+    {
+        var result = await _service.DownloadFileAsync(id);
+        if (result == null)
+            return NotFound(new { error = $"File with ID {id} not found." });
+
+        // Determine content type
+        var contentType = result.Filetype?.ToLower() switch
+        {
+            "pdf" => "application/pdf",
+            "jpg" or "jpeg" => "image/jpeg",
+            "png" => "image/png",
+            "gif" => "image/gif",
+            "doc" => "application/msword",
+            "docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "xls" => "application/vnd.ms-excel",
+            "xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "mp4" => "video/mp4",
+            "txt" => "text/plain",
+            "xml" => "application/xml",
+            "csv" => "text/csv",
+            "zip" => "application/zip",
+            _ => "application/octet-stream"
+        };
+
+        // Return file as downloadable response
+        return File(
+            result.Filedata!,
+            contentType,
+            result.Filename);
     }
 
     // PATCH api/Filemaster/5/complete
@@ -144,17 +195,5 @@ public class FilemasterController : ControllerBase
         if (!success)
             return NotFound(new { error = $"File with ID {id} not found." });
         return NoContent();
-    }
-
-    // POST api/Filemaster/upload
-    // Real file upload using IFormFile
-    [HttpPost("upload")]
-    [Authorize(Roles = "Patient,Provider,Admin")]
-    [Consumes("multipart/form-data")]
-    public async Task<IActionResult> Upload(
-        [FromForm] RealFileUploadDto dto)
-    {
-        var result = await _service.UploadRealFileAsync(dto);
-        return Ok(result);
     }
 }

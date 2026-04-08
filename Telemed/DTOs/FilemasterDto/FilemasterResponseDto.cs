@@ -1,7 +1,4 @@
-﻿// DTOs/FilemasterResponseDto.cs
-namespace Telemed.DTOs;
-
-public class FilemasterResponseDto
+﻿public class FilemasterResponseDto
 {
     public long Fileid { get; set; }
 
@@ -14,11 +11,13 @@ public class FilemasterResponseDto
     public string? Filename { get; set; }
     public string? Filetype { get; set; }
     public long Totalsize { get; set; }
-    public string? Filesizeformatted { get; set; }  // e.g. "2.5 MB"
+    public string? Filesizeformatted { get; set; }
     public int Totalchunks { get; set; }
     public int? Uploadedchunks { get; set; }
-    public int? Uploadprogresspercent { get; set; } // Auto calculated
+    public int? Uploadprogresspercent { get; set; }
     public bool? Iscompleted { get; set; }
+
+    public int Storedchunkcount { get; set; } // ✅ ADD THIS
 
     // Audit
     public DateTime? Createddate { get; set; }

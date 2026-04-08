@@ -2,6 +2,7 @@
 using Telemed.DTOs;
 using Telemed.Models;
 
+
 namespace Telemed.Mappers;
 
 public static class FilemasterMapper
@@ -9,24 +10,21 @@ public static class FilemasterMapper
     private static DateTime ToUnspecified(DateTime dt)
         => DateTime.SpecifyKind(dt, DateTimeKind.Unspecified);
 
-    // Format file size to human readable
     private static string FormatFileSize(long bytes)
     {
         if (bytes < 1024)
             return $"{bytes} B";
         else if (bytes < 1024 * 1024)
             return $"{bytes / 1024.0:F1} KB";
-        else if (bytes < 1024 * 1024 * 1024)
+        else if (bytes < 1024L * 1024 * 1024)
             return $"{bytes / (1024.0 * 1024):F1} MB";
         else
             return $"{bytes / (1024.0 * 1024 * 1024):F2} GB";
     }
 
-    // Calculate upload progress percentage
-    private static int? CalculateProgress(int? uploaded, int total)
+    private static int CalculateProgress(int? uploaded, int total)
     {
-        if (!uploaded.HasValue || total == 0)
-            return 0;
+        if (!uploaded.HasValue || total == 0) return 0;
         return (int)Math.Round((double)uploaded.Value / total * 100);
     }
 
@@ -41,6 +39,7 @@ public static class FilemasterMapper
             Totalchunks = dto.Totalchunks,
             Uploadedchunks = 0,
             Iscompleted = false,
+            Pdfcontent = new List<byte[]>(),  // Empty list to start
             Createdby = dto.Createdby,
             Createddate = ToUnspecified(DateTime.UtcNow)
         };
@@ -50,15 +49,6 @@ public static class FilemasterMapper
     {
         if (!string.IsNullOrEmpty(dto.Filename))
             entity.Filename = dto.Filename;
-
-        if (dto.Uploadedchunks.HasValue)
-        {
-            entity.Uploadedchunks = dto.Uploadedchunks;
-
-            // Auto mark complete if all chunks uploaded
-            if (entity.Uploadedchunks >= entity.Totalchunks)
-                entity.Iscompleted = true;
-        }
 
         if (dto.Iscompleted.HasValue)
             entity.Iscompleted = dto.Iscompleted;
@@ -78,9 +68,9 @@ public static class FilemasterMapper
             // Patient Info
             Patientid = entity.Patientid,
             Patientname = patient != null
-                                     ? $"{patient.Firstname} {patient.Middlename} {patient.Lastname}"
-                                       .Replace("  ", " ").Trim()
-                                     : null,
+                                    ? $"{patient.Firstname} {patient.Middlename} {patient.Lastname}"
+                                      .Replace("  ", " ").Trim()
+                                    : null,
             Mrn = patient?.Mrn,
 
             // File Details
@@ -94,6 +84,7 @@ public static class FilemasterMapper
                                         entity.Uploadedchunks,
                                         entity.Totalchunks),
             Iscompleted = entity.Iscompleted,
+            Storedchunkcount = entity.Pdfcontent?.Count ?? 0,
 
             // Audit
             Createddate = entity.Createddate,

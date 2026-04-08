@@ -181,6 +181,7 @@ builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IFilemasterService, FilemasterService>();
+builder.Services.AddScoped<IProviderInfoService, ProviderInfoService>();
 
 var app = builder.Build();
 
