@@ -182,6 +182,8 @@ builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IFilemasterService, FilemasterService>();
 builder.Services.AddScoped<IProviderInfoService, ProviderInfoService>();
+builder.Services.AddScoped<IProviderGroupService, ProviderGroupService>();
+builder.Services.AddScoped<IDeviceService, DeviceService>();
 
 var app = builder.Build();
 

@@ -37,6 +37,13 @@ namespace Telemed.Models
 
         public virtual DbSet<Providerprofile> Providerprofiles { get; set; }
 
+        public virtual DbSet<ProviderGroup> ProviderGroups { get; set; }
+
+        public virtual DbSet<ProviderGroup_Member> ProviderGroupMembers { get; set; }
+
+        public virtual DbSet<Device> Devices { get; set; }
+
+
         // ====================== Keyless DTO for Patient Summary ======================
         public virtual DbSet<PatientSummaryDto> PatientSummaries { get; set; } = null!;
 
@@ -934,6 +941,142 @@ namespace Telemed.Models
                     .HasConstraintName("fk_providerprofile_providerinfo");
             });
 
+            //===== Proivder Group======
+
+            modelBuilder.Entity<ProviderGroup>(entity =>
+            {
+                entity.ToTable("providergroup");
+
+                entity.HasKey(e => e.GroupId).HasName("providergroup_pkey");
+
+                entity.HasIndex(e => e.Email).IsUnique();
+                entity.HasIndex(e => e.Speciality);
+
+                // Column Mappings
+                entity.Property(e => e.GroupId).HasColumnName("groupid");
+                entity.Property(e => e.GroupName).HasColumnName("groupname");
+                entity.Property(e => e.Email).HasColumnName("email");
+                entity.Property(e => e.Phone).HasColumnName("phone");
+                entity.Property(e => e.Speciality).HasColumnName("speciality");
+                entity.Property(e => e.Website).HasColumnName("website");
+                entity.Property(e => e.Bio).HasColumnName("bio");
+                entity.Property(e => e.AddressLine1).HasColumnName("addressline1");
+                entity.Property(e => e.AddressLine2).HasColumnName("addressline2");
+                entity.Property(e => e.City).HasColumnName("city");
+                entity.Property(e => e.State).HasColumnName("state");
+                entity.Property(e => e.Zip).HasColumnName("zip");
+                entity.Property(e => e.Country).HasColumnName("country");
+                entity.Property(e => e.IsActive).HasColumnName("isactive");
+                entity.Property(e => e.CreatedAt).HasColumnName("createdat");
+                entity.Property(e => e.UpdatedAt).HasColumnName("updatedat");
+                entity.Property(e => e.CreatedBy).HasColumnName("createdby");
+                entity.Property(e => e.UpdatedBy).HasColumnName("updatedby");
+
+                entity.Property(e => e.GroupName).HasMaxLength(150);
+                entity.Property(e => e.Email).HasMaxLength(150);
+                entity.Property(e => e.Phone).HasMaxLength(20);
+                entity.Property(e => e.Speciality).HasMaxLength(150);
+                entity.Property(e => e.Website).HasMaxLength(200);
+                entity.Property(e => e.AddressLine1).HasMaxLength(200);
+                entity.Property(e => e.AddressLine2).HasMaxLength(200);
+                entity.Property(e => e.City).HasMaxLength(100);
+                entity.Property(e => e.State).HasMaxLength(50);
+                entity.Property(e => e.Zip).HasMaxLength(20);
+                entity.Property(e => e.Country)
+                      .HasMaxLength(100)
+                      .HasDefaultValueSql("'United States'::character varying");
+
+                entity.Property(e => e.IsActive).HasDefaultValue(true);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
+                entity.Property(e => e.UpdatedAt).HasDefaultValueSql("now()");
+            });
+
+            //==========ProviderGroup_Member==============
+
+            modelBuilder.Entity<ProviderGroup_Member>(entity =>
+            {
+                entity.ToTable("providergroup_members");
+
+                entity.HasKey(e => e.GroupMemberId).HasName("providergroup_members_pkey");
+
+                entity.HasIndex(e => new { e.GroupId, e.ProviderInfoId }).IsUnique();
+
+                // Column Mappings - This fixes the current error
+                entity.Property(e => e.GroupMemberId).HasColumnName("groupmemberid");
+                entity.Property(e => e.GroupId).HasColumnName("groupid");
+                entity.Property(e => e.ProviderInfoId).HasColumnName("providerinfoid");
+                entity.Property(e => e.JoinDate).HasColumnName("joindate");
+                entity.Property(e => e.RoleInGroup).HasColumnName("roleingroup");
+                entity.Property(e => e.IsActive).HasColumnName("isactive");
+                entity.Property(e => e.CreatedAt).HasColumnName("createdat");
+                entity.Property(e => e.UpdatedAt).HasColumnName("updatedat");
+             
+
+                entity.Property(e => e.RoleInGroup)
+                      .HasMaxLength(50)
+                      .HasDefaultValueSql("'Member'::character varying");
+
+                entity.Property(e => e.IsActive).HasDefaultValue(true);
+                entity.Property(e => e.JoinDate).HasDefaultValueSql("now()");
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
+                entity.Property(e => e.UpdatedAt).HasDefaultValueSql("now()");
+
+                // Relationships
+                entity.HasOne(d => d.Group)
+                      .WithMany(p => p.GroupMembers)
+                      .HasForeignKey(d => d.GroupId)
+                      .HasConstraintName("fk_groupmember_group")
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(d => d.ProviderInfo)
+                      .WithMany(p => p.GroupMemberships)
+                      .HasForeignKey(d => d.ProviderInfoId)
+                      .HasConstraintName("fk_groupmember_providerinfo")
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            //==========Device==================================================//
+
+            modelBuilder.Entity<Device>(entity =>
+            {
+                entity.HasKey(e => e.Id).HasName("device_pkey");
+
+                entity.ToTable("device");
+
+                entity.HasIndex(e => e.DeviceId, "device_device_id_key").IsUnique();
+
+                entity.HasIndex(e => e.SerialNumber, "device_serial_number_key").IsUnique();
+
+                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.CreatedAt)
+                    .HasDefaultValueSql("now()")
+                    .HasColumnType("timestamp without time zone")
+                    .HasColumnName("created_at");
+                entity.Property(e => e.Description).HasColumnName("description");
+                entity.Property(e => e.DeviceId)
+                    .HasMaxLength(200)
+                    .HasColumnName("device_id");
+                entity.Property(e => e.DevicePicture).HasColumnName("device_picture");
+                entity.Property(e => e.Manufacturer)
+                    .HasMaxLength(200)
+                    .HasColumnName("manufacturer");
+                entity.Property(e => e.ModelNumber)
+                    .HasMaxLength(200)
+                    .HasColumnName("model_number");
+                entity.Property(e => e.Name)
+                    .HasMaxLength(200)
+                    .HasColumnName("name");
+                entity.Property(e => e.SerialNumber)
+                    .HasMaxLength(200)
+                    .HasColumnName("serial_number");
+                entity.Property(e => e.Status)
+                    .HasDefaultValue(true)
+                    .HasColumnName("status");
+                entity.Property(e => e.UpdatedAt)
+                    .HasDefaultValueSql("now()")
+                    .HasColumnType("timestamp without time zone")
+                    .HasColumnName("updated_at");
+            });
 
             OnModelCreatingPartial(modelBuilder);
         }

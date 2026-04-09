@@ -32,4 +32,8 @@ public partial class Providerinfo
     public long? Updatedby { get; set; }
 
     public virtual Providerprofile? Providerprofile { get; set; }
+
+    // Add this 
+    public virtual ICollection<ProviderGroup_Member> GroupMemberships { get; set; }
+    = new List<ProviderGroup_Member>();
 }
