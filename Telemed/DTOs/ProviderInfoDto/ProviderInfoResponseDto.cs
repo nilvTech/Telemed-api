@@ -5,6 +5,8 @@ public class ProviderInfoResponseDto
 {
     // ===== Providerinfo =====
     public long Providerinfoid { get; set; }
+    public string? GroupName { get; set; }
+
     public string? Firstname { get; set; }
     public string? Lastname { get; set; }
     public string? Fullname { get; set; }

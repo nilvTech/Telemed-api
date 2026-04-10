@@ -33,6 +33,9 @@ public partial class Providerinfo
 
     public virtual Providerprofile? Providerprofile { get; set; }
 
+    public string? GroupName { get; set; }
+
+
     // Add this 
     public virtual ICollection<ProviderGroup_Member> GroupMemberships { get; set; }
     = new List<ProviderGroup_Member>();

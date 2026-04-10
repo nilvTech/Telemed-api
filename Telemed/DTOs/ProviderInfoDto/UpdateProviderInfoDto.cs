@@ -4,6 +4,8 @@ namespace Telemed.DTOs;
 public class UpdateProviderInfoDto
 {
     // ===== Providerinfo Fields =====
+    public string? GroupName { get; set; }
+
     public string? Firstname { get; set; }
     public string? Lastname { get; set; }
     public string? Phone { get; set; }

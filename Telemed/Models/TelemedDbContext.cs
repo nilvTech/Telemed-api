@@ -842,6 +842,7 @@ namespace Telemed.Models
                 entity.Property(e => e.Gender)
                     .HasMaxLength(20)
                     .HasColumnName("gender");
+                entity.Property(e => e.GroupName).HasMaxLength(200);
                 entity.Property(e => e.Lastname)
                     .HasMaxLength(100)
                     .HasColumnName("lastname");

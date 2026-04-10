@@ -23,6 +23,8 @@ public partial class ProviderGroup
     public long? CreatedBy { get; set; }
     public long? UpdatedBy { get; set; }
 
+
+
     // Navigation Property - Many-to-Many
     public virtual ICollection<ProviderGroup_Member> GroupMembers { get; set; }
         = new List<ProviderGroup_Member>();

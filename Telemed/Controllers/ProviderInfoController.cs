@@ -1,14 +1,11 @@
-﻿// Controllers/ProviderInfoController.cs
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Telemed.DTOs;
 using Telemed.Services.Interfaces;
 
 namespace Telemed.Controllers;
 
+[Route("api/providerinfo")]
 [ApiController]
-[Route("api/[controller]")]
-[Authorize]
 public class ProviderInfoController : ControllerBase
 {
     private readonly IProviderInfoService _service;
@@ -18,143 +15,76 @@ public class ProviderInfoController : ControllerBase
         _service = service;
     }
 
-    // POST api/ProviderInfo
-    // Creates Providerinfo + Providerprofile together
     [HttpPost]
-    [Authorize(Roles = "Admin")]
-    [Consumes("multipart/form-data")]
-    public async Task<IActionResult> Create(
-        [FromForm] CreateProviderInfoDto dto)
+    public async Task<ActionResult<ProviderInfoResponseDto>> Create([FromForm] CreateProviderInfoDto dto)
     {
         var result = await _service.CreateAsync(dto);
-        return CreatedAtAction(nameof(GetById),
-            new { id = result.Providerinfoid }, result);
+        return CreatedAtAction(nameof(GetById), new { id = result.Providerinfoid }, result);
     }
 
-    // GET api/ProviderInfo
     [HttpGet]
-    [Authorize(Roles = "Admin,Provider,Patient")]
-    public async Task<IActionResult> GetAll()
-    {
-        var result = await _service.GetAllAsync();
-        return Ok(result);
-    }
+    public async Task<ActionResult<IEnumerable<ProviderInfoResponseDto>>> GetAll()
+        => Ok(await _service.GetAllAsync());
 
-    // GET api/ProviderInfo/5
     [HttpGet("{id}")]
-    [Authorize(Roles = "Admin,Provider,Patient")]
-    public async Task<IActionResult> GetById(long id)
+    public async Task<ActionResult<ProviderInfoResponseDto>> GetById(long id)
     {
         var result = await _service.GetByIdAsync(id);
-        if (result == null)
-            return NotFound(new { error = $"Provider with ID {id} not found." });
-        return Ok(result);
+        return result == null ? NotFound() : Ok(result);
     }
 
-    // GET api/ProviderInfo/email/dr.smith@telemed.com
     [HttpGet("email/{email}")]
-    [Authorize(Roles = "Admin,Provider")]
-    public async Task<IActionResult> GetByEmail(string email)
+    public async Task<ActionResult<ProviderInfoResponseDto>> GetByEmail(string email)
     {
         var result = await _service.GetByEmailAsync(email);
-        if (result == null)
-            return NotFound(new { error = $"Provider with email '{email}' not found." });
-        return Ok(result);
+        return result == null ? NotFound() : Ok(result);
     }
 
-    // GET api/ProviderInfo/speciality/Cardiology
     [HttpGet("speciality/{speciality}")]
-    [Authorize(Roles = "Admin,Provider,Patient")]
-    public async Task<IActionResult> GetBySpeciality(string speciality)
-    {
-        var result = await _service.GetBySpecialityAsync(speciality);
-        return Ok(result);
-    }
+    public async Task<ActionResult<IEnumerable<ProviderInfoResponseDto>>> GetBySpeciality(string speciality)
+        => Ok(await _service.GetBySpecialityAsync(speciality));
 
-    // GET api/ProviderInfo/state/CA
-    // Important for US telemedicine license verification
     [HttpGet("state/{state}")]
-    [Authorize(Roles = "Admin,Provider,Patient")]
-    public async Task<IActionResult> GetByState(string state)
-    {
-        var result = await _service.GetByStateAsync(state);
-        return Ok(result);
-    }
+    public async Task<ActionResult<IEnumerable<ProviderInfoResponseDto>>> GetByState(string state)
+        => Ok(await _service.GetByStateAsync(state));
 
-    // GET api/ProviderInfo/active
     [HttpGet("active")]
-    [Authorize(Roles = "Admin,Provider,Patient")]
-    public async Task<IActionResult> GetActive()
-    {
-        var result = await _service.GetActiveAsync();
-        return Ok(result);
-    }
+    public async Task<ActionResult<IEnumerable<ProviderInfoResponseDto>>> GetActive()
+        => Ok(await _service.GetActiveAsync());
 
-    // PUT api/ProviderInfo/5
-    // Updates Providerinfo + Providerprofile together
     [HttpPut("{id}")]
-    [Authorize(Roles = "Admin,Provider")]
-    [Consumes("multipart/form-data")]
-    public async Task<IActionResult> Update(
-        long id, [FromForm] UpdateProviderInfoDto dto)
+    public async Task<ActionResult<ProviderInfoResponseDto>> Update(long id, [FromForm] UpdateProviderInfoDto dto)
     {
         var result = await _service.UpdateAsync(id, dto);
-        if (result == null)
-            return NotFound(new { error = $"Provider with ID {id} not found." });
-        return Ok(result);
+        return result == null ? NotFound() : Ok(result);
     }
 
-    // PATCH api/ProviderInfo/5/picture
-    // Update profile picture only
-    [HttpPatch("{id}/picture")]
-    [Authorize(Roles = "Admin,Provider")]
-    [Consumes("multipart/form-data")]
-    public async Task<IActionResult> UpdateProfilePicture(
-        long id,
-        IFormFile picture,
-        [FromQuery] long? updatedby)
+    [HttpPut("{id}/picture")]
+    public async Task<ActionResult<ProviderProfilePictureResponseDto>> UpdateProfilePicture(
+        long id, IFormFile picture, [FromQuery] long? updatedby)
     {
-        var result = await _service
-            .UpdateProfilePictureAsync(id, picture, updatedby);
-        if (result == null)
-            return NotFound(new { error = $"Provider with ID {id} not found." });
-        return Ok(result);
+        var result = await _service.UpdateProfilePictureAsync(id, picture, updatedby);
+        return result == null ? NotFound() : Ok(result);
     }
 
-    // GET api/ProviderInfo/5/picture
-    // Get profile picture as image file
     [HttpGet("{id}/picture")]
-    [Authorize(Roles = "Admin,Provider,Patient")]
     public async Task<IActionResult> GetProfilePicture(long id)
     {
-        var pictureBytes = await _service.GetProfilePictureAsync(id);
-        if (pictureBytes == null || pictureBytes.Length == 0)
-            return NotFound(new { error = "No profile picture found." });
-
-        // Return as image
-        return File(pictureBytes, "image/jpeg");
+        var picture = await _service.GetProfilePictureAsync(id);
+        return picture == null ? NotFound() : File(picture, "image/jpeg");
     }
 
-    // PATCH api/ProviderInfo/5/deactivate
-    [HttpPatch("{id}/deactivate")]
-    [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Deactivate(
-        long id, [FromQuery] long? updatedby)
+    [HttpPut("{id}/deactivate")]
+    public async Task<IActionResult> Deactivate(long id, [FromQuery] long? updatedby)
     {
         var success = await _service.DeactivateAsync(id, updatedby);
-        if (!success)
-            return NotFound(new { error = $"Provider with ID {id} not found." });
-        return Ok(new { message = $"Provider {id} deactivated successfully." });
+        return success ? Ok(new { message = "Provider deactivated successfully" }) : NotFound();
     }
 
-    // DELETE api/ProviderInfo/5
     [HttpDelete("{id}")]
-    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(long id)
     {
         var success = await _service.DeleteAsync(id);
-        if (!success)
-            return NotFound(new { error = $"Provider with ID {id} not found." });
-        return NoContent();
+        return success ? Ok(new { message = "Provider deleted successfully" }) : NotFound();
     }
 }
