@@ -184,6 +184,8 @@ builder.Services.AddScoped<IFilemasterService, FilemasterService>();
 builder.Services.AddScoped<IProviderInfoService, ProviderInfoService>();
 builder.Services.AddScoped<IProviderGroupService, ProviderGroupService>();
 builder.Services.AddScoped<IDeviceService, DeviceService>();
+builder.Services.AddScoped<IConditionMasterService, ConditionMasterService>();
+builder.Services.AddScoped<IPatientConditionService, PatientConditionService>();
 
 var app = builder.Build();
 
