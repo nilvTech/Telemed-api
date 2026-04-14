@@ -8,9 +8,9 @@ public static class ProviderInfoMapper
     private static DateTime ToUnspecified(DateTime dt)
         => DateTime.SpecifyKind(dt, DateTimeKind.Unspecified);
 
-    public static Providerinfo ToProviderinfoEntity(CreateProviderInfoDto dto, byte[]? profilePictureBytes = null)
+    public static ProviderInfo ToProviderinfoEntity(CreateProviderInfoDto dto, byte[]? profilePictureBytes = null)
     {
-        return new Providerinfo
+        return new ProviderInfo
         {
             GroupName = dto.GroupName,
             Firstname = dto.Firstname,
@@ -55,7 +55,7 @@ public static class ProviderInfoMapper
         };
     }
 
-    public static ProviderInfoResponseDto ToResponseDto(Providerinfo entity)
+    public static ProviderInfoResponseDto ToResponseDto(ProviderInfo entity)
     {
         var profile = entity.Providerprofile;
 

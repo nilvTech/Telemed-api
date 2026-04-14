@@ -65,7 +65,19 @@ public partial class Consultation
 
     public virtual ICollection<Consultationprescription> Consultationprescriptions { get; set; } = new List<Consultationprescription>();
 
+    //patient condition
+
+    public virtual ICollection<PatientCondition> PatientConditions { get; set; } = new List<PatientCondition>();
+
+
+
+    // condition
+
+
+
     public virtual Patient Patient { get; set; } = null!;
 
     public virtual Provider Provider { get; set; } = null!;
+
+   // public virtual PatientCondition? PatientCondition { get; set; }
 }

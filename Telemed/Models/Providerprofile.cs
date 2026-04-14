@@ -51,5 +51,5 @@ public partial class Providerprofile
 
     public long? Updatedby { get; set; }
 
-    public virtual Providerinfo Providerinfo { get; set; } = null!;
+    public virtual ProviderInfo Providerinfo { get; set; } = null!;
 }

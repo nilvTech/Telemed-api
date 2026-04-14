@@ -21,34 +21,20 @@ public class PatientConditionService : IPatientConditionService
             .Include(pc => pc.Patient)
             .Include(pc => pc.ConditionMaster)
             .Include(pc => pc.ProviderInfo);
+          //  .Include(pc => pc.Consultation)  // 🔥 CRITICAL
     }
 
     public async Task<PatientConditionResponseDto> CreateAsync(CreatePatientConditionDto dto)
     {
-        var patientExists = await _context.Patients
-            .AnyAsync(p => p.Patientid == dto.PatientId);
+        if (!await _context.Patients.AnyAsync(p => p.Patientid == dto.PatientId))
+            throw new ArgumentException($"Patient ID {dto.PatientId} does not exist.");
 
-        if (!patientExists)
-            throw new ArgumentException($"Patient with ID {dto.PatientId} does not exist.");
-
-        var conditionExists = await _context.ConditionMasters
-            .AnyAsync(c => c.ConditionId == dto.ConditionId);
-
-        if (!conditionExists)
-            throw new ArgumentException($"Condition with ID {dto.ConditionId} does not exist.");
-
-        var duplicate = await _context.PatientConditions
-            .AnyAsync(pc =>
-                pc.PatientId == dto.PatientId &&
-                pc.ConditionId == dto.ConditionId &&
-                pc.Status == "Active");
-
-        if (duplicate)
-            throw new ArgumentException("This condition is already active for this patient.");
+        if (!await _context.ConditionMasters.AnyAsync(c => c.ConditionId == dto.ConditionId))
+            throw new ArgumentException($"Condition ID {dto.ConditionId} does not exist.");
 
         var validStatuses = new[] { "Active", "Resolved", "Managed", "Inactive", "Suspected" };
 
-        if (!string.IsNullOrEmpty(dto.Status) &&
+        if (!string.IsNullOrWhiteSpace(dto.Status) &&
             !validStatuses.Contains(dto.Status, StringComparer.OrdinalIgnoreCase))
             throw new ArgumentException("Invalid Status.");
 
@@ -130,12 +116,6 @@ public class PatientConditionService : IPatientConditionService
 
         if (entity == null)
             return null;
-
-        var validStatuses = new[] { "Active", "Resolved", "Managed", "Inactive", "Suspected" };
-
-        if (!string.IsNullOrEmpty(dto.Status) &&
-            !validStatuses.Contains(dto.Status, StringComparer.OrdinalIgnoreCase))
-            throw new ArgumentException("Invalid Status.");
 
         PatientConditionMapper.UpdateEntity(entity, dto);
 

@@ -33,7 +33,7 @@ namespace Telemed.Models
         public virtual DbSet<Videosession> Videosessions { get; set; }
         public virtual DbSet<Vital> Vitals { get; set; }
         public virtual DbSet<Filemaster> Filemasters { get; set; }
-        public virtual DbSet<Providerinfo> Providerinfos { get; set; }
+        public virtual DbSet<ProviderInfo> Providerinfos { get; set; }
 
         public virtual DbSet<Providerprofile> Providerprofiles { get; set; }
 
@@ -42,6 +42,10 @@ namespace Telemed.Models
         public virtual DbSet<ProviderGroup_Member> ProviderGroupMembers { get; set; }
 
         public virtual DbSet<Device> Devices { get; set; }
+
+        // NEW DbSets for Condition Module
+        public virtual DbSet<ConditionMaster> ConditionMasters { get; set; } = null!;
+        public virtual DbSet<PatientCondition> PatientConditions { get; set; } = null!;
 
 
         // ====================== Keyless DTO for Patient Summary ======================
@@ -280,6 +284,11 @@ namespace Telemed.Models
                     .HasForeignKey(d => d.Providerid)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("fk_consultation_provider");
+
+
+                // Providerinfo
+
+
             });
 
             modelBuilder.Entity<Consultationdiagnosis>(entity =>
@@ -815,7 +824,7 @@ namespace Telemed.Models
 
             //===============Providerinfo&providerprofile===================//
 
-            modelBuilder.Entity<Providerinfo>(entity =>
+            modelBuilder.Entity<ProviderInfo>(entity =>
             {
                 entity.HasKey(e => e.Providerinfoid).HasName("providerinfo_pkey");
 
@@ -1011,7 +1020,7 @@ namespace Telemed.Models
                 entity.Property(e => e.IsActive).HasColumnName("isactive");
                 entity.Property(e => e.CreatedAt).HasColumnName("createdat");
                 entity.Property(e => e.UpdatedAt).HasColumnName("updatedat");
-             
+
 
                 entity.Property(e => e.RoleInGroup)
                       .HasMaxLength(50)
@@ -1079,8 +1088,81 @@ namespace Telemed.Models
                     .HasColumnName("updated_at");
             });
 
+            // ConditionMaster
+
+            modelBuilder.Entity<ConditionMaster>(entity =>
+            {
+                entity.ToTable("conditionmaster");
+                entity.HasKey(e => e.ConditionId);
+
+                entity.Property(e => e.ConditionId).HasColumnName("conditionid");
+                entity.Property(e => e.ConditionName).HasColumnName("conditionname");
+                entity.Property(e => e.IcdCode).HasColumnName("icdcode");
+                entity.Property(e => e.Description).HasColumnName("description");
+                entity.Property(e => e.Type).HasColumnName("type");
+
+                // ✅ Fix — these were missing
+                entity.Property(e => e.CreatedAt).HasColumnName("createdat");
+                entity.Property(e => e.UpdatedAt).HasColumnName("updatedat");
+
+                entity.HasIndex(e => e.IcdCode).IsUnique();
+            });
+
+            // PatientCondition
+
+            modelBuilder.Entity<PatientCondition>(entity =>
+            {
+                entity.ToTable("patientcondition");
+                entity.HasKey(e => e.PatientConditionId);
+
+                entity.Property(e => e.PatientConditionId).HasColumnName("patientconditionid");
+                entity.Property(e => e.PatientId).HasColumnName("patientid");
+                entity.Property(e => e.ConditionId).HasColumnName("conditionid");
+                entity.Property(e => e.ConsultationId).HasColumnName("consultationid");
+                entity.Property(e => e.ProviderInfoId).HasColumnName("providerinfoid");
+                entity.Property(e => e.Status).HasColumnName("status");
+                entity.Property(e => e.OnsetDate).HasColumnName("onsetdate");
+                entity.Property(e => e.Note).HasColumnName("note");
+                entity.Property(e => e.ManagedBy).HasColumnName("managedby");
+
+                // ✅ Fix — these were missing HasColumnName
+                entity.Property(e => e.CreatedAt).HasColumnName("createdat");
+                entity.Property(e => e.UpdatedAt).HasColumnName("updatedat");
+                entity.Property(e => e.CreatedBy).HasColumnName("createdby");
+                entity.Property(e => e.UpdatedBy).HasColumnName("updatedby");
+
+                entity.HasOne(d => d.Patient)
+                      .WithMany(p => p.PatientConditions)
+                      .HasForeignKey(d => d.PatientId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(d => d.ConditionMaster)
+                      .WithMany(c => c.PatientConditions)
+                      .HasForeignKey(d => d.ConditionId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+
+
+                entity.HasOne(d => d.ProviderInfo)
+                      .WithMany(p => p.PatientConditions)
+                      .HasForeignKey(d => d.ProviderInfoId)
+                      .OnDelete(DeleteBehavior.SetNull);
+
+
+               // entity.HasOne(d => d.Consultation)
+               //     .WithMany()
+                //      .HasForeignKey(d => d.ConsultationId)
+                 //    .OnDelete(DeleteBehavior.SetNull);
+
+                modelBuilder.Entity<PatientCondition>()
+               .Property(pc => pc.ConsultationId)
+                .HasColumnName("consultationid");
+
+            });
+
             OnModelCreatingPartial(modelBuilder);
         }
+            
 
         partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
     }

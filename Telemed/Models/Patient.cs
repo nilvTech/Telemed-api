@@ -82,4 +82,9 @@ public partial class Patient
     public virtual ICollection<Videosession> Videosessions { get; set; } = new List<Videosession>();
 
     public virtual ICollection<Vital> Vitals { get; set; } = new List<Vital>();
+
+    // patinetcondition 
+
+    public virtual ICollection<PatientCondition> PatientConditions { get; set; } = new List<PatientCondition>();
+
 }

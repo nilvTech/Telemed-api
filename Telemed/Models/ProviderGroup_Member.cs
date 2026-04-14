@@ -17,6 +17,6 @@ public partial class ProviderGroup_Member
 
     // Navigation Properties
     public virtual ProviderGroup Group { get; set; } = null!;
-    public virtual Providerinfo ProviderInfo { get; set; } = null!;   // Note: Providerinfo (your existing class)
+    public virtual ProviderInfo ProviderInfo { get; set; } = null!;   // Note: Providerinfo (your existing class)
 
 }

@@ -1,5 +1,4 @@
-﻿// Mappers/PatientConditionMapper.cs
-using Telemed.DTOs;
+﻿using Telemed.DTOs;
 using Telemed.Models;
 
 namespace Telemed.Mappers;
@@ -9,8 +8,7 @@ public static class PatientConditionMapper
     private static DateTime ToUnspecified(DateTime dt)
         => DateTime.SpecifyKind(dt, DateTimeKind.Unspecified);
 
-    public static PatientCondition ToEntity(
-        CreatePatientConditionDto dto)
+    public static PatientCondition ToEntity(CreatePatientConditionDto dto)
     {
         return new PatientCondition
         {
@@ -57,28 +55,40 @@ public static class PatientConditionMapper
         {
             PatientConditionId = entity.PatientConditionId,
 
+            // Patient
             PatientId = entity.PatientId,
             PatientName = entity.Patient != null
                 ? $"{entity.Patient.Firstname} {entity.Patient.Lastname}".Trim()
                 : null,
-
             Mrn = entity.Patient?.Mrn,
 
+            // Condition
             ConditionId = entity.ConditionId,
+            ConditionName = entity.ConditionMaster?.ConditionName,
+            IcdCode = entity.ConditionMaster?.IcdCode,
+            Description = entity.ConditionMaster?.Description,
+            Type = entity.ConditionMaster?.Type,
 
-            // ✅ IMPORTANT FIX (FROM NAVIGATION)
-            ConditionName = entity.ConditionMaster.ConditionName,
-            IcdCode = entity.ConditionMaster.IcdCode,
-            Description = entity.ConditionMaster.Description,
-            Type = entity.ConditionMaster.Type,
-
+            // Provider
             ProviderInfoId = entity.ProviderInfoId,
-
             ProviderName = entity.ProviderInfo != null
                 ? $"{entity.ProviderInfo.Firstname} {entity.ProviderInfo.Lastname}"
                 : null,
 
-         
+            // ✅ FIXED CONSULTATION
+           // ConsultationId = entity.ConsultationId,
+            //ConsultationDate = entity.Consultation != null
+            //    ? entity.Consultation.Createddate   // ✅ correct property
+             //   : null,
+
+            // Details
+            Status = entity.Status,
+            OnsetDate = entity.OnsetDate,
+            Note = entity.Note,
+            ManagedBy = entity.ManagedBy,
+
+            CreatedAt = entity.CreatedAt,
+            UpdatedAt = entity.UpdatedAt
         };
     }
 }

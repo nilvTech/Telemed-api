@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Telemed.Models;
 
-public partial class Providerinfo
+public partial class ProviderInfo
 {
     public long Providerinfoid { get; set; }
 
@@ -39,4 +39,11 @@ public partial class Providerinfo
     // Add this 
     public virtual ICollection<ProviderGroup_Member> GroupMemberships { get; set; }
     = new List<ProviderGroup_Member>();
+
+    // Provider Condition
+
+    public virtual ICollection<PatientCondition> PatientConditions { get; set; } = new List<PatientCondition>();
+
+
+
 }
