@@ -186,6 +186,7 @@ builder.Services.AddScoped<IProviderGroupService, ProviderGroupService>();
 builder.Services.AddScoped<IDeviceService, DeviceService>();
 builder.Services.AddScoped<IConditionMasterService, ConditionMasterService>();
 builder.Services.AddScoped<IPatientConditionService, PatientConditionService>();
+builder.Services.AddScoped<IPatientTaskService, PatientTaskService>();
 
 var app = builder.Build();
 

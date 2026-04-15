@@ -44,6 +44,9 @@ public partial class ProviderInfo
 
     public virtual ICollection<PatientCondition> PatientConditions { get; set; } = new List<PatientCondition>();
 
+    // ADD THIS FOR TASK RELATION
+    public virtual ICollection<PatientTask> PatientTasks { get; set; } = new List<PatientTask>();
+
 
 
 }

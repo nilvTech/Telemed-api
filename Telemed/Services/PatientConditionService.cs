@@ -20,8 +20,8 @@ public class PatientConditionService : IPatientConditionService
         return _context.PatientConditions
             .Include(pc => pc.Patient)
             .Include(pc => pc.ConditionMaster)
-            .Include(pc => pc.ProviderInfo);
-          //  .Include(pc => pc.Consultation)  // 🔥 CRITICAL
+            .Include(pc => pc.ProviderInfo)
+           .Include(pc => pc.Consultation); // Consultation
     }
 
     public async Task<PatientConditionResponseDto> CreateAsync(CreatePatientConditionDto dto)

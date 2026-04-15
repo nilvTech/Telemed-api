@@ -75,11 +75,9 @@ public static class PatientConditionMapper
                 ? $"{entity.ProviderInfo.Firstname} {entity.ProviderInfo.Lastname}"
                 : null,
 
-            // ✅ FIXED CONSULTATION
-           // ConsultationId = entity.ConsultationId,
-            //ConsultationDate = entity.Consultation != null
-            //    ? entity.Consultation.Createddate   // ✅ correct property
-             //   : null,
+            // Consultation (FIXED)
+            ConsultationId = entity.ConsultationId,
+            ConsultationDate = entity.Consultation?.Createddate,
 
             // Details
             Status = entity.Status,

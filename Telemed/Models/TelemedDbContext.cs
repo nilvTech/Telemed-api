@@ -47,6 +47,9 @@ namespace Telemed.Models
         public virtual DbSet<ConditionMaster> ConditionMasters { get; set; } = null!;
         public virtual DbSet<PatientCondition> PatientConditions { get; set; } = null!;
 
+        // Task
+
+        public virtual DbSet<PatientTask> PatientTasks { get; set; }
 
         // ====================== Keyless DTO for Patient Summary ======================
         public virtual DbSet<PatientSummaryDto> PatientSummaries { get; set; } = null!;
@@ -1149,16 +1152,80 @@ namespace Telemed.Models
                       .OnDelete(DeleteBehavior.SetNull);
 
 
-               // entity.HasOne(d => d.Consultation)
-               //     .WithMany()
-                //      .HasForeignKey(d => d.ConsultationId)
-                 //    .OnDelete(DeleteBehavior.SetNull);
+                entity.HasOne(d => d.Consultation)
+                    .WithMany(p=> p.PatientConditions)
+                      .HasForeignKey(d => d.ConsultationId)
+                     .OnDelete(DeleteBehavior.SetNull);
 
                 modelBuilder.Entity<PatientCondition>()
                .Property(pc => pc.ConsultationId)
                 .HasColumnName("consultationid");
 
             });
+
+            // Task
+
+            modelBuilder.Entity<PatientTask>(entity =>
+            {
+                entity.HasKey(e => e.Taskid).HasName("task_pkey");
+
+                entity.ToTable("task");
+
+                // ----------------------------------------
+                // Indexes
+                // ----------------------------------------
+                entity.HasIndex(e => e.Duedate, "idx_task_duedate");
+                entity.HasIndex(e => e.Patientid, "idx_task_patientid");
+                entity.HasIndex(e => e.Status, "idx_task_status");
+
+                // ----------------------------------------
+                // Columns
+                // ----------------------------------------
+                entity.Property(e => e.Taskid).HasColumnName("taskid");
+                entity.Property(e => e.Taskname).HasColumnName("taskname").HasMaxLength(255);
+                entity.Property(e => e.Duedate).HasColumnName("duedate");
+                entity.Property(e => e.Patientid).HasColumnName("patientid");
+                entity.Property(e => e.Providerinfoid).HasColumnName("providerinfoid");
+                entity.Property(e => e.Status)
+                    .HasMaxLength(50)
+                    .HasDefaultValueSql("'Pending'::character varying")
+                    .HasColumnName("status");
+                entity.Property(e => e.Priority)
+                    .HasMaxLength(20)
+                    .HasDefaultValueSql("'Medium'::character varying")
+                    .HasColumnName("priority");
+                entity.Property(e => e.Description).HasColumnName("description");
+                entity.Property(e => e.Completeddate).HasColumnName("completeddate");
+
+                entity.Property(e => e.Createdat)
+                    .HasDefaultValueSql("now()")
+                    .HasColumnName("createdat");
+
+                entity.Property(e => e.Updatedat)
+                    .HasDefaultValueSql("now()")
+                    .HasColumnName("updatedat");
+
+                entity.Property(e => e.Createdby).HasColumnName("createdby");
+                entity.Property(e => e.Updatedby).HasColumnName("updatedby");
+
+                // ----------------------------------------
+                // RELATIONSHIP with Patient
+                // ----------------------------------------
+                entity.HasOne(d => d.Patient)                            //                 entity.HasOne(d => d.patient)
+
+                    .WithMany(p => p.PatientTasks)
+                    .HasForeignKey(e => e.Patientid)
+                    .HasConstraintName("fk_task_patient");
+
+                // ----------------------------------------
+                // RELATIONSHIP with ProviderInfo
+                // ----------------------------------------
+                entity.HasOne(d => d.Providerinfo)    //
+                    .WithMany(p => p.PatientTasks)
+                    .HasForeignKey(e => e.Providerinfoid)
+                    .HasConstraintName("fk_task_provider");
+            });
+
 
             OnModelCreatingPartial(modelBuilder);
         }

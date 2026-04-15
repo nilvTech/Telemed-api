@@ -22,8 +22,8 @@ public class PatientConditionResponseDto
     public string? ProviderName { get; set; }
 
     // Consultation Info
-    public long? Consultationid { get; set; }
-    public DateTime? Consultationdate { get; set; }
+    public long? ConsultationId { get; set; }
+    public DateTime? ConsultationDate { get; set; }
 
     // Condition Details
     public string? Status { get; set; }
