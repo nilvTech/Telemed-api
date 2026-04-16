@@ -87,7 +87,15 @@ public partial class Patient
 
     public virtual ICollection<PatientCondition> PatientConditions { get; set; } = new List<PatientCondition>();
 
-    // ADD THIS FOR TASK RELATION
+    // TASK 
     public virtual ICollection<PatientTask> PatientTasks { get; set; } = new List<PatientTask>();
+
+    //Claim
+
+    public virtual ICollection<Claim> Claims { get; set; } = new List<Claim>();
+
+    // RPM 
+
+    public virtual ICollection<Rpmmonitoring> Rpmmonitorings { get; set; }= new List<Rpmmonitoring>();
 
 }

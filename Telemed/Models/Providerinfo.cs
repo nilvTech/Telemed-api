@@ -47,6 +47,15 @@ public partial class ProviderInfo
     // ADD THIS FOR TASK RELATION
     public virtual ICollection<PatientTask> PatientTasks { get; set; } = new List<PatientTask>();
 
+    // Cliam
+
+    public virtual ICollection<Claim> Claims { get; set; } = new List<Claim>();
+
+    // RPM
+
+    public virtual ICollection<Rpmmonitoring> Rpmmonitorings { get; set; } = new List<Rpmmonitoring>();
+
+
 
 
 }

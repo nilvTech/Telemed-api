@@ -27,11 +27,11 @@ public class JwtService
         // Revised Claims - Using short names + standard ClaimTypes (Recommended)
         var claims = new[]
         {
-            new Claim(ClaimTypes.NameIdentifier, user.Userid.ToString()),
-            new Claim(ClaimTypes.Email, user.Email.Trim()),
-            new Claim(ClaimTypes.Role, user.Role.Trim()),           // This is important
-            new Claim("ReferenceId", user.Referenceid.ToString()),
-            new Claim("Fullname", fullname.Trim())
+            new System.Security.Claims.Claim(ClaimTypes.NameIdentifier, user.Userid.ToString()),
+            new System.Security.Claims.Claim(ClaimTypes.Email, user.Email.Trim()),
+            new System.Security.Claims.Claim(ClaimTypes.Role, user.Role.Trim()),           // This is important
+            new System.Security.Claims.Claim("ReferenceId", user.Referenceid.ToString()),
+            new System.Security.Claims.Claim("Fullname", fullname.Trim())
         };
 
         var expiry = DateTime.UtcNow.AddMinutes(

@@ -51,6 +51,16 @@ namespace Telemed.Models
 
         public virtual DbSet<PatientTask> PatientTasks { get; set; }
 
+        //Claim
+
+        public DbSet<Claim> Claims { get; set; }
+        public DbSet<Claimdetail> Claimdetails { get; set; }
+
+        // RPM
+
+        public virtual DbSet<Rpmmonitoring> Rpmmonitorings { get; set; }
+
+
         // ====================== Keyless DTO for Patient Summary ======================
         public virtual DbSet<PatientSummaryDto> PatientSummaries { get; set; } = null!;
 
@@ -1224,6 +1234,195 @@ namespace Telemed.Models
                     .WithMany(p => p.PatientTasks)
                     .HasForeignKey(e => e.Providerinfoid)
                     .HasConstraintName("fk_task_provider");
+            });
+
+            // Cliam
+
+            modelBuilder.Entity<Claim>(entity =>
+            {
+                entity.HasKey(e => e.Claimid).HasName("claim_pkey");
+
+                entity.ToTable("claim");
+
+                entity.HasIndex(e => e.Claimnumber, "claim_claimnumber_key").IsUnique();
+
+                entity.HasIndex(e => e.Patientid, "idx_claim_patientid");
+
+                entity.HasIndex(e => e.Status, "idx_claim_status");
+
+                entity.Property(e => e.Claimid).HasColumnName("claimid");
+                entity.Property(e => e.Claimnumber)
+                    .HasMaxLength(50)
+                    .HasColumnName("claimnumber");
+                entity.Property(e => e.Createdat)
+                    .HasDefaultValueSql("now()")
+                    .HasColumnName("createdat");
+                entity.Property(e => e.Createdby).HasColumnName("createdby");
+                entity.Property(e => e.Deniedreason).HasColumnName("deniedreason");
+                entity.Property(e => e.Icdcode)
+                    .HasMaxLength(20)
+                    .HasColumnName("icdcode");
+                entity.Property(e => e.Paidamount)
+                    .HasPrecision(12, 2)
+                    .HasDefaultValueSql("0")
+                    .HasColumnName("paidamount");
+                entity.Property(e => e.Patientid).HasColumnName("patientid");
+                entity.Property(e => e.Payer)
+                    .HasMaxLength(100)
+                    .HasColumnName("payer");
+                entity.Property(e => e.Providerinfoid).HasColumnName("providerinfoid");
+                entity.Property(e => e.Status)
+                    .HasMaxLength(30)
+                    .HasDefaultValueSql("'Pending'::character varying")
+                    .HasColumnName("status");
+                entity.Property(e => e.Submissiondate).HasColumnName("submissiondate");
+                entity.Property(e => e.Totalamount)
+                    .HasPrecision(12, 2)
+                    .HasColumnName("totalamount");
+                entity.Property(e => e.Totaltime).HasColumnName("totaltime");
+                entity.Property(e => e.Updatedat)
+                    .HasDefaultValueSql("now()")
+                    .HasColumnName("updatedat");
+                entity.Property(e => e.Updatedby).HasColumnName("updatedby");
+            
+
+            entity.Property(e => e.Patientid).HasColumnName("patientid");
+                entity.Property(e => e.Providerinfoid).HasColumnName("providerinfoid");
+
+                // 🔥 Patient relation
+                entity.HasOne(c => c.Patient)
+                    .WithMany(p => p.Claims)   // or Claim list if you add
+                    .HasForeignKey(c => c.Patientid)
+                    .HasConstraintName("fk_claim_patient");
+
+                // 🔥 Provider relation
+                entity.HasOne(c => c.Providerinfo)
+                    .WithMany(p => p.Claims)   // change if needed
+                    .HasForeignKey(c => c.Providerinfoid)
+                    .HasConstraintName("fk_claim_provider");
+            });
+
+            // ================= CLAIM DETAIL =================
+            modelBuilder.Entity<Claimdetail>(entity =>
+            {
+                entity.HasKey(e => e.Claimdetailid).HasName("claimdetail_pkey");
+
+                entity.ToTable("claimdetail");
+
+                entity.Property(e => e.Claimdetailid).HasColumnName("claimdetailid");
+                entity.Property(e => e.Amount)
+                    .HasPrecision(10, 2)
+                    .HasColumnName("amount");
+                entity.Property(e => e.Claimid).HasColumnName("claimid");
+                entity.Property(e => e.Cptcode)
+                    .HasMaxLength(20)
+                    .HasColumnName("cptcode");
+                entity.Property(e => e.Description)
+                    .HasMaxLength(255)
+                    .HasColumnName("description");
+                entity.Property(e => e.Units)
+                    .HasDefaultValue(1)
+                    .HasColumnName("units");
+
+                entity.HasOne(d => d.Claim).WithMany(p => p.Claimdetails)
+                    .HasForeignKey(d => d.Claimid)
+                    .HasConstraintName("fk_claimdetail_claim");
+            });
+
+            // RPM
+
+                modelBuilder.Entity<Rpmmonitoring>(entity =>
+                {
+                    entity.HasKey(e => e.Rpmmonitoringid).HasName("rpmmonitoring_pkey");
+
+                    entity.ToTable("rpmmonitoring");
+
+                    entity.HasIndex(e => e.Isreviewed, "idx_rpmmonitoring_isreviewed");
+
+                    entity.HasIndex(e => new { e.Patientid, e.Isreviewed }, "idx_rpmmonitoring_patient_isreviewed");
+
+                    entity.HasIndex(e => new { e.Patientid, e.Readingdate }, "idx_rpmmonitoring_patient_readingdate").IsDescending(false, true);
+
+                    entity.HasIndex(e => e.Patientid, "idx_rpmmonitoring_patientid");
+
+                    entity.HasIndex(e => e.Readingdate, "idx_rpmmonitoring_readingdate").IsDescending();
+
+                    entity.Property(e => e.Rpmmonitoringid).HasColumnName("rpmmonitoringid");
+                    entity.Property(e => e.Createdat)
+                        .HasDefaultValueSql("now()")
+                        .HasColumnName("createdat");
+                    entity.Property(e => e.Createdby).HasColumnName("createdby");
+                    entity.Property(e => e.Deviceid)
+                        .HasMaxLength(100)
+                        .HasColumnName("deviceid");
+                    entity.Property(e => e.Devicetype)
+                        .HasMaxLength(50)
+                        .HasColumnName("devicetype");
+                    entity.Property(e => e.Diastolic).HasColumnName("diastolic");
+                    entity.Property(e => e.Glucose).HasColumnName("glucose");
+                    entity.Property(e => e.Glucoseunit)
+                        .HasMaxLength(10)
+                        .HasDefaultValueSql("'mg/dL'::character varying")
+                        .HasColumnName("glucoseunit");
+                    entity.Property(e => e.Heartrate).HasColumnName("heartrate");
+                    entity.Property(e => e.Height)
+                        .HasPrecision(5, 2)
+                        .HasColumnName("height");
+                    entity.Property(e => e.Heightunit)
+                        .HasMaxLength(10)
+                        .HasDefaultValueSql("'inch'::character varying")
+                        .HasColumnName("heightunit");
+                    entity.Property(e => e.Isauto)
+                        .HasDefaultValue(false)
+                        .HasColumnName("isauto");
+                    entity.Property(e => e.Isreviewed)
+                        .HasDefaultValue(false)
+                        .HasColumnName("isreviewed");
+                    entity.Property(e => e.Note).HasColumnName("note");
+                    entity.Property(e => e.Patientid).HasColumnName("patientid");
+                    entity.Property(e => e.Readingdate).HasColumnName("readingdate");
+                    entity.Property(e => e.Respiratoryrate).HasColumnName("respiratoryrate");
+                    entity.Property(e => e.Reviewedat).HasColumnName("reviewedat");
+                    entity.Property(e => e.Reviewedby).HasColumnName("reviewedby");
+                    entity.Property(e => e.Sourcedata)
+                        .HasMaxLength(20)
+                        .HasColumnName("sourcedata");
+                    entity.Property(e => e.Spo2).HasColumnName("spo2");
+                    entity.Property(e => e.Systolic).HasColumnName("systolic");
+                    entity.Property(e => e.Temperature)
+                        .HasPrecision(5, 2)
+                    .HasColumnName("temperature");
+                entity.Property(e => e.Temperatureunit)
+                    .HasMaxLength(10)
+                    .HasDefaultValueSql("'F'::character varying")
+                    .HasColumnName("temperatureunit");
+                entity.Property(e => e.Updatedat)
+                    .HasDefaultValueSql("now()")
+                    .HasColumnName("updatedat");
+                entity.Property(e => e.Updatedby).HasColumnName("updatedby");
+                entity.Property(e => e.Weight)
+                    .HasPrecision(6, 2)
+                    .HasColumnName("weight");
+                entity.Property(e => e.Weightunit)
+                    .HasMaxLength(10)
+                    .HasDefaultValueSql("'lbs'::character varying")
+                    .HasColumnName("weightunit");
+                    entity.HasOne(d => d.ReviewedByProvider)
+       .WithMany()
+       .HasForeignKey(d => d.Reviewedby)
+       .HasConstraintName("fk_rpmmonitoring_reviewedby");
+
+                    //  Patient FK
+                    entity.HasOne(r => r.Patient)
+                    .WithMany(p => p.Rpmmonitorings)
+                    .HasForeignKey(r => r.Patientid)
+                    .HasConstraintName("fk_rpmmonitoring_patient");
+
+                // Provider FK 
+                entity.HasOne(r => r.ReviewedByProvider)
+                    .WithMany(p => p.Rpmmonitorings)
+                    .HasForeignKey(r => r.Reviewedby)
+                    .HasConstraintName("fk_rpmmonitoring_reviewedby");
             });
 
 

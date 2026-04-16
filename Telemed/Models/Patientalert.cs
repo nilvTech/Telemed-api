@@ -27,3 +27,4 @@ public partial class Patientalert
 
     public virtual Patient Patient { get; set; } = null!;
 }
+    
