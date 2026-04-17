@@ -98,4 +98,10 @@ public partial class Patient
 
     public virtual ICollection<Rpmmonitoring> Rpmmonitorings { get; set; }= new List<Rpmmonitoring>();
 
+    // Care Plan
+
+    public virtual ICollection<Careplan> Careplans { get; set; } = new List<Careplan>();
+
+    public virtual ICollection<Smartgoal> Smartgoals { get; set; } = new List<Smartgoal>();
+
 }

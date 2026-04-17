@@ -1,5 +1,4 @@
-﻿// Services/Interfaces/IRpmmonitoringService.cs
-using Telemed.DTOs;
+﻿using Telemed.DTOs;
 
 namespace Telemed.Services.Interfaces;
 

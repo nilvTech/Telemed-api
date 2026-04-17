@@ -189,6 +189,8 @@ builder.Services.AddScoped<IPatientConditionService, PatientConditionService>();
 builder.Services.AddScoped<IPatientTaskService, PatientTaskService>();
 builder.Services.AddScoped<IClaimService, ClaimService>();
 builder.Services.AddScoped<IRpmmonitoringService, RpmmonitoringService>();
+builder.Services.AddScoped<ICareplanService, CareplanService>();
+builder.Services.AddScoped<ISmartgoalService, SmartgoalService>();
 
 var app = builder.Build();
 

@@ -60,6 +60,13 @@ namespace Telemed.Models
 
         public virtual DbSet<Rpmmonitoring> Rpmmonitorings { get; set; }
 
+        // Care Plan
+
+        public virtual DbSet<Careplan> Careplans { get; set; }
+
+        public virtual DbSet<Smartgoal> Smartgoals { get; set; }
+
+
 
         // ====================== Keyless DTO for Patient Summary ======================
         public virtual DbSet<PatientSummaryDto> PatientSummaries { get; set; } = null!;
@@ -1289,13 +1296,13 @@ namespace Telemed.Models
             entity.Property(e => e.Patientid).HasColumnName("patientid");
                 entity.Property(e => e.Providerinfoid).HasColumnName("providerinfoid");
 
-                // 🔥 Patient relation
+                //  Patient relation
                 entity.HasOne(c => c.Patient)
                     .WithMany(p => p.Claims)   // or Claim list if you add
                     .HasForeignKey(c => c.Patientid)
                     .HasConstraintName("fk_claim_patient");
 
-                // 🔥 Provider relation
+                //  Provider relation
                 entity.HasOne(c => c.Providerinfo)
                     .WithMany(p => p.Claims)   // change if needed
                     .HasForeignKey(c => c.Providerinfoid)
@@ -1408,6 +1415,7 @@ namespace Telemed.Models
                     .HasDefaultValueSql("'lbs'::character varying")
                     .HasColumnName("weightunit");
                     entity.HasOne(d => d.ReviewedByProvider)
+       // ReviewByProvider
        .WithMany()
        .HasForeignKey(d => d.Reviewedby)
        .HasConstraintName("fk_rpmmonitoring_reviewedby");
@@ -1423,6 +1431,165 @@ namespace Telemed.Models
                     .WithMany(p => p.Rpmmonitorings)
                     .HasForeignKey(r => r.Reviewedby)
                     .HasConstraintName("fk_rpmmonitoring_reviewedby");
+            });
+
+            // Care Plan
+
+            modelBuilder.Entity<Careplan>(entity =>
+            {
+                entity.HasKey(e => e.Careplanid).HasName("careplan_pkey");
+
+                entity.ToTable("careplan");
+
+                entity.HasIndex(e => e.Nextreviewdate, "idx_careplan_nextreviewdate");
+
+                entity.HasIndex(e => e.Patientid, "idx_careplan_patientid");
+
+                entity.HasIndex(e => e.Risklevel, "idx_careplan_risklevel");
+
+                entity.HasIndex(e => e.Status, "idx_careplan_status");
+
+                entity.Property(e => e.Careplanid).HasColumnName("careplanid");
+                entity.Property(e => e.Allergies).HasColumnName("allergies");
+                entity.Property(e => e.Bmitarget)
+                    .HasPrecision(5, 2)
+                    .HasColumnName("bmitarget");
+                entity.Property(e => e.Bpdiastolictarget).HasColumnName("bpdiastolictarget");
+                entity.Property(e => e.Bpsystolictarget).HasColumnName("bpsystolictarget");
+                entity.Property(e => e.Ccmminutes)
+                    .HasDefaultValue(0)
+                    .HasColumnName("ccmminutes");
+                entity.Property(e => e.Createdat)
+                    .HasDefaultValueSql("now()")
+                    .HasColumnName("createdat");
+                entity.Property(e => e.Createdby).HasColumnName("createdby");
+                entity.Property(e => e.Enddate).HasColumnName("enddate");
+                entity.Property(e => e.Glucosetargetmax).HasColumnName("glucosetargetmax");
+                entity.Property(e => e.Glucosetargetmin).HasColumnName("glucosetargetmin");
+                entity.Property(e => e.Goals).HasColumnName("goals");
+                entity.Property(e => e.Hba1ctarget)
+                    .HasPrecision(4, 2)
+                    .HasColumnName("hba1ctarget");
+                entity.Property(e => e.Heartratetargetmax).HasColumnName("heartratetargetmax");
+                entity.Property(e => e.Heartratetargetmin).HasColumnName("heartratetargetmin");
+                entity.Property(e => e.Interventions).HasColumnName("interventions");
+                entity.Property(e => e.Lastreviewdate).HasColumnName("lastreviewdate");
+                entity.Property(e => e.Ldltarget)
+                    .HasPrecision(4, 1)
+                    .HasColumnName("ldltarget");
+                entity.Property(e => e.Medications).HasColumnName("medications");
+                entity.Property(e => e.Nextreviewdate).HasColumnName("nextreviewdate");
+                entity.Property(e => e.Patientid).HasColumnName("patientid");
+                entity.Property(e => e.Problems).HasColumnName("problems");
+                entity.Property(e => e.Providerinfoid).HasColumnName("providerinfoid");
+                entity.Property(e => e.Reviewfrequency)
+                    .HasMaxLength(50)
+                    .HasColumnName("reviewfrequency");
+                entity.Property(e => e.Risklevel)
+                    .HasMaxLength(20)
+                    .HasDefaultValueSql("'Medium'::character varying")
+                    .HasColumnName("risklevel");
+                entity.Property(e => e.Spo2target).HasColumnName("spo2target");
+                entity.Property(e => e.Startdate).HasColumnName("startdate");
+                entity.Property(e => e.Status)
+                    .HasMaxLength(20)
+                    .HasDefaultValueSql("'Active'::character varying")
+                    .HasColumnName("status");
+                entity.Property(e => e.Updatedat)
+                    .HasDefaultValueSql("now()")
+                    .HasColumnName("updatedat");
+                entity.Property(e => e.Updatedby).HasColumnName("updatedby");
+                entity.Property(e => e.Weighttarget)
+                    .HasPrecision(6, 2)
+                    .HasColumnName("weighttarget");
+
+                entity.HasOne(d => d.Patient).WithMany(p => p.Careplans)
+                    .HasForeignKey(d => d.Patientid)
+                    .HasConstraintName("fk_careplan_patient");
+
+                entity.HasOne(d => d.Providerinfo).WithMany(p => p.Careplans)
+                    .HasForeignKey(d => d.Providerinfoid)
+                    .OnDelete(DeleteBehavior.SetNull)
+                    .HasConstraintName("fk_careplan_provider");
+            });
+
+            // Smart Goal
+
+            modelBuilder.Entity<Smartgoal>(entity =>
+            {
+                entity.HasKey(e => e.Smartgoalid).HasName("smartgoal_pkey");
+
+                entity.ToTable("smartgoal");
+
+                entity.HasIndex(e => e.Measurementtype, "idx_smartgoal_measurementtype");
+
+                entity.HasIndex(e => e.Patientid, "idx_smartgoal_patientid");
+
+                entity.HasIndex(e => e.Providerinfoid, "idx_smartgoal_providerid");
+
+                entity.HasIndex(e => e.Status, "idx_smartgoal_status");
+
+                entity.HasIndex(e => e.Targetdate, "idx_smartgoal_targetdate");
+
+                entity.Property(e => e.Smartgoalid).HasColumnName("smartgoalid");
+                entity.Property(e => e.Careplanid).HasColumnName("careplanid");
+                entity.Property(e => e.Createdat)
+                    .HasDefaultValueSql("now()")
+                    .HasColumnName("createdat");
+                entity.Property(e => e.Createdby).HasColumnName("createdby");
+                entity.Property(e => e.Currentvalue)
+                    .HasPrecision(10, 2)
+                    .HasColumnName("currentvalue");
+                entity.Property(e => e.Description).HasColumnName("description");
+                entity.Property(e => e.Diettype)
+                    .HasMaxLength(100)
+                    .HasColumnName("diettype");
+                entity.Property(e => e.Exercisetype)
+                    .HasMaxLength(100)
+                    .HasColumnName("exercisetype");
+                entity.Property(e => e.Goaltitle)
+                    .HasMaxLength(255)
+                    .HasColumnName("goaltitle");
+                entity.Property(e => e.Measurementtype)
+                    .HasMaxLength(50)
+                    .HasColumnName("measurementtype");
+                entity.Property(e => e.Notes).HasColumnName("notes");
+                entity.Property(e => e.Patientid).HasColumnName("patientid");
+                entity.Property(e => e.Progress)
+                    .HasPrecision(5, 2)
+                    .HasDefaultValueSql("0")
+                    .HasColumnName("progress");
+                entity.Property(e => e.Providerinfoid).HasColumnName("providerinfoid");
+                entity.Property(e => e.Startdate).HasColumnName("startdate");
+                entity.Property(e => e.Status)
+                    .HasMaxLength(20)
+                    .HasDefaultValueSql("'Active'::character varying")
+                    .HasColumnName("status");
+                entity.Property(e => e.Targetdate).HasColumnName("targetdate");
+                entity.Property(e => e.Targetvalue)
+                    .HasPrecision(10, 2)
+                    .HasColumnName("targetvalue");
+                entity.Property(e => e.Unit)
+                    .HasMaxLength(20)
+                    .HasColumnName("unit");
+                entity.Property(e => e.Updatedat)
+                    .HasDefaultValueSql("now()")
+                    .HasColumnName("updatedat");
+                entity.Property(e => e.Updatedby).HasColumnName("updatedby");
+                entity.Property(e => e.Weeklyminutes).HasColumnName("weeklyminutes");
+
+                entity.HasOne(d => d.Careplan).WithMany(p => p.Smartgoals)
+                    .HasForeignKey(d => d.Careplanid)
+                    .HasConstraintName("fk_smartgoal_careplan");
+
+                entity.HasOne(d => d.Patient).WithMany(p => p.Smartgoals)
+                    .HasForeignKey(d => d.Patientid)
+                    .HasConstraintName("fk_smartgoal_patient");
+
+                entity.HasOne(d => d.Providerinfo).WithMany(p => p.Smartgoals)
+                    .HasForeignKey(d => d.Providerinfoid)
+                    .OnDelete(DeleteBehavior.SetNull)
+                    .HasConstraintName("fk_smartgoal_provider");
             });
 
 
