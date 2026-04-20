@@ -2,7 +2,7 @@
 
 public partial class Encounter
 {
-    public long Encounterid { get; set; }
+    public int Encounterid { get; set; }
     public long Appointmentid { get; set; }
     public long Patientid { get; set; }
     public long Providerid { get; set; }
@@ -25,4 +25,7 @@ public partial class Encounter
 
     // ✅ Add this
     public virtual Appointment Appointment { get; set; } = null!;
+
+    public virtual ICollection<Clinicalorder> Clinicalorders { get; set; } = new List<Clinicalorder>();
+
 }

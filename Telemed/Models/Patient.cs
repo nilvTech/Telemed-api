@@ -104,4 +104,7 @@ public partial class Patient
 
     public virtual ICollection<Smartgoal> Smartgoals { get; set; } = new List<Smartgoal>();
 
+    public virtual ICollection<Clinicalorder> Clinicalorders { get; set; } = new List<Clinicalorder>();
+
+
 }

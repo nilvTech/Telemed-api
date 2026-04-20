@@ -196,4 +196,12 @@ public class FilemasterController : ControllerBase
             return NotFound(new { error = $"File with ID {id} not found." });
         return NoContent();
     }
+    // GET api/Filemaster/order/101
+    [HttpGet("order/{orderId}")]
+    [Authorize(Roles = "Provider,Admin,Patient")]
+    public async Task<IActionResult> GetFilesByOrderId(long orderId)
+    {
+        var files = await _service.GetByFileTypeAsync($"ORDER-{orderId}");
+        return Ok(files);
+    }
 }

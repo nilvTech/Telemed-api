@@ -30,4 +30,7 @@ public partial class Filemaster
     public DateTime? Updateddate { get; set; }
 
     public List<byte[]>? Pdfcontent { get; set; }
+
+
+
 }

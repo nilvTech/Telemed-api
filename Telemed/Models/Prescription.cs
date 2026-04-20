@@ -7,7 +7,7 @@ public partial class Prescription
 {
     public int Prescriptionid { get; set; }
 
-    public long Encounterid { get; set; }
+    public int Encounterid { get; set; }
 
     public long Patientid { get; set; }
 

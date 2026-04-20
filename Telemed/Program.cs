@@ -191,6 +191,7 @@ builder.Services.AddScoped<IClaimService, ClaimService>();
 builder.Services.AddScoped<IRpmmonitoringService, RpmmonitoringService>();
 builder.Services.AddScoped<ICareplanService, CareplanService>();
 builder.Services.AddScoped<ISmartgoalService, SmartgoalService>();
+builder.Services.AddScoped<IClinicalOrderService, ClinicalOrderService>();
 
 var app = builder.Build();
 

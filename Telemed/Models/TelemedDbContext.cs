@@ -66,6 +66,10 @@ namespace Telemed.Models
 
         public virtual DbSet<Smartgoal> Smartgoals { get; set; }
 
+        public virtual DbSet<Clinicalmaster> Clinicalmasters { get; set; }
+
+        public virtual DbSet<Clinicalorder> Clinicalorders { get; set; }
+
 
 
         // ====================== Keyless DTO for Patient Summary ======================
@@ -1592,8 +1596,108 @@ namespace Telemed.Models
                     .HasConstraintName("fk_smartgoal_provider");
             });
 
+            // Clinical Master
 
-            OnModelCreatingPartial(modelBuilder);
+            modelBuilder.Entity<Clinicalmaster>(entity =>
+            {
+                entity.HasKey(e => e.Clinicalmasterid).HasName("clinicalmaster_pkey");
+
+                entity.ToTable("clinicalmaster");
+
+                entity.HasIndex(e => e.Ordercode, "idx_clinicalmaster_ordercode");
+
+                entity.HasIndex(e => e.Ordername, "idx_clinicalmaster_ordername");
+
+                entity.HasIndex(e => e.Ordertype, "idx_clinicalmaster_ordertype");
+
+                entity.Property(e => e.Clinicalmasterid).HasColumnName("clinicalmasterid");
+                entity.Property(e => e.Createdat)
+                    .HasDefaultValueSql("now()")
+                    .HasColumnName("createdat");
+                entity.Property(e => e.Description).HasColumnName("description");
+                entity.Property(e => e.Ordercode)
+                    .HasMaxLength(50)
+                    .HasColumnName("ordercode");
+                entity.Property(e => e.Ordername)
+                    .HasMaxLength(150)
+                    .HasColumnName("ordername");
+                entity.Property(e => e.Ordertype)
+                    .HasMaxLength(20)
+                    .HasColumnName("ordertype");
+            });
+
+            // Clinical Order
+
+            modelBuilder.Entity<Clinicalorder>(entity =>
+            {
+                entity.HasKey(e => e.Clinicalorderid).HasName("clinicalorder_pkey");
+
+                entity.ToTable("clinicalorder");
+
+                entity.HasIndex(e => e.Clinicalmasterid, "idx_clinicalorder_clinicalmasterid");
+
+                entity.HasIndex(e => e.Encounterid, "idx_clinicalorder_encounterid");
+
+                entity.HasIndex(e => e.Orderdate, "idx_clinicalorder_orderdate");
+
+                entity.HasIndex(e => e.Patientid, "idx_clinicalorder_patientid");
+
+                entity.HasIndex(e => e.Priority, "idx_clinicalorder_priority");
+
+                entity.HasIndex(e => e.Providerinfoid, "idx_clinicalorder_providerinfoid");
+
+                entity.HasIndex(e => e.Status, "idx_clinicalorder_status");
+
+                entity.Property(e => e.Clinicalorderid).HasColumnName("clinicalorderid");
+                entity.Property(e => e.Clinicalmasterid).HasColumnName("clinicalmasterid");
+                entity.Property(e => e.Completeddate).HasColumnName("completeddate");
+                entity.Property(e => e.Createdat)
+                    .HasDefaultValueSql("now()")
+                    .HasColumnName("createdat");
+                entity.Property(e => e.Encounterid).HasColumnName("encounterid");
+                entity.Property(e => e.Orderdate)
+                    .HasDefaultValueSql("now()")
+                    .HasColumnName("orderdate");
+                entity.Property(e => e.Patientid).HasColumnName("patientid");
+                entity.Property(e => e.Priority)
+                    .HasMaxLength(20)
+                    .HasDefaultValueSql("'Routine'::character varying")
+                    .HasColumnName("priority");
+                entity.Property(e => e.Providerinfoid).HasColumnName("providerinfoid");
+                entity.Property(e => e.Status)
+                    .HasMaxLength(20)
+                    .HasDefaultValueSql("'Pending'::character varying")
+                    .HasColumnName("status");
+                entity.Property(e => e.Updatedat)
+                    .HasDefaultValueSql("now()")
+                    .HasColumnName("updatedat");
+
+                entity.HasOne(d => d.Clinicalmaster).WithMany(p => p.Clinicalorders)
+                    .HasForeignKey(d => d.Clinicalmasterid)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("fk_clinicalorder_master");
+
+                entity.HasOne(d => d.Encounter).WithMany(p => p.Clinicalorders)
+                    .HasForeignKey(d => d.Encounterid)
+                    .OnDelete(DeleteBehavior.SetNull)
+                    .HasConstraintName("fk_clinicalorder_encounter");
+
+                entity.HasOne(d => d.Patient).WithMany(p => p.Clinicalorders)
+                    .HasForeignKey(d => d.Patientid)
+                    .HasConstraintName("fk_clinicalorder_patient");
+
+                entity.HasOne(d => d.Providerinfo).WithMany(p => p.Clinicalorders)
+                    .HasForeignKey(d => d.Providerinfoid)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("fk_clinicalorder_providerinfo");
+
+                // File Master
+
+
+            });
+
+
+          OnModelCreatingPartial(modelBuilder);
         }
             
 
