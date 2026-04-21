@@ -31,6 +31,12 @@ public partial class Filemaster
 
     public List<byte[]>? Pdfcontent { get; set; }
 
+    // Clinical Order
+    public long? Clinicalorderid { get; set; }
+
+    public virtual Clinicalorder? Clinicalorder { get; set; }
 
 
 }
+
+

@@ -844,6 +844,11 @@ namespace Telemed.Models
                 entity.Property(e => e.Uploadedchunks)
                     .HasDefaultValue(0)
                     .HasColumnName("uploadedchunks");
+                // Clinical Order
+                modelBuilder.Entity<Filemaster>()
+    .HasOne(f => f.Clinicalorder)
+    .WithMany()
+    .HasForeignKey(f => f.Clinicalorderid);
             });
 
             //===============Providerinfo&providerprofile===================//

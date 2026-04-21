@@ -1,5 +1,6 @@
 ﻿// Services/Interfaces/IFilemasterService.cs
 using Telemed.DTOs;
+using Telemed.Models;
 
 namespace Telemed.Services.Interfaces;
 
@@ -27,4 +28,10 @@ public interface IFilemasterService
 
     // Mark complete manually
     Task<FilemasterResponseDto?> MarkCompleteAsync(long id, long? updatedby);
+
+
+    // ===== FILE (NEW) =====
+    Task<Filemaster> UploadOrderFileAsync(long clinicalOrderId, IFormFile file);
+
+    Task<IEnumerable<Filemaster>> GetFilesByOrderIdAsync(long clinicalOrderId);
 }

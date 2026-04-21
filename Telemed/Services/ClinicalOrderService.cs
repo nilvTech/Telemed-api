@@ -372,18 +372,26 @@ public class ClinicalOrderService : IClinicalOrderService
     }
 
     // FILE MASTER
-    public async Task<Filemaster> UploadOrderFileAsync(long orderId, IFormFile file)
+
+    public async Task<Filemaster> UploadOrderFileAsync(long clinicalOrderId, IFormFile file)
     {
+        var orderExists = await _context.Clinicalorders
+            .AnyAsync(x => x.Clinicalorderid == clinicalOrderId);
+
+        if (!orderExists)
+            throw new Exception("Invalid Clinical Order Id");
+
         using var ms = new MemoryStream();
         await file.CopyToAsync(ms);
 
         var entity = new Filemaster
         {
+            Clinicalorderid = clinicalOrderId,
             Filename = file.FileName,
-            Filetype = $"ORDER-{orderId}",   // Linking without DB column
+            Filetype = Path.GetExtension(file.FileName),
             Totalsize = ms.Length,
-            Uploadedchunks = 1,
             Totalchunks = 1,
+            Uploadedchunks = 1,
             Iscompleted = true,
             Createddate = DateTime.UtcNow,
             Pdfcontent = new List<byte[]> { ms.ToArray() }
@@ -391,6 +399,15 @@ public class ClinicalOrderService : IClinicalOrderService
 
         _context.Filemasters.Add(entity);
         await _context.SaveChangesAsync();
+
         return entity;
     }
+
+    public async Task<IEnumerable<Filemaster>> GetFilesByOrderIdAsync(long clinicalOrderId)
+    {
+        return await _context.Filemasters
+            .Where(x => x.Clinicalorderid == clinicalOrderId)
+            .ToListAsync();
+    }
+
 }

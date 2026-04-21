@@ -41,6 +41,5 @@ public interface IClinicalOrderService
     Task<bool> DeleteOrderAsync(long id);
 
     // ===== FILE INTEGRATION (OPTIONAL BUT REAL WORLD) =====
-    Task<Filemaster> UploadOrderFileAsync(long orderId, IFormFile file);
    
 }

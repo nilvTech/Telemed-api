@@ -196,12 +196,24 @@ public class FilemasterController : ControllerBase
             return NotFound(new { error = $"File with ID {id} not found." });
         return NoContent();
     }
-    // GET api/Filemaster/order/101
-    [HttpGet("order/{orderId}")]
-    [Authorize(Roles = "Provider,Admin,Patient")]
-    public async Task<IActionResult> GetFilesByOrderId(long orderId)
+    // ================= FILE UPLOAD =================
+
+    // POST api/ClinicalOrder/orders/{orderId}/upload-file
+    [HttpPost("orders/{orderId}/upload-file")]
+    [Authorize(Roles = "Provider,Admin")]
+    public async Task<IActionResult> UploadFile(long orderId, IFormFile file)
     {
-        var files = await _service.GetByFileTypeAsync($"ORDER-{orderId}");
-        return Ok(files);
+        var result = await _service.UploadOrderFileAsync(orderId, file);
+        return Ok(result);
     }
+
+    // GET api/ClinicalOrder/orders/{orderId}/files
+    [HttpGet("orders/{orderId}/files")]
+    [Authorize(Roles = "Admin,Provider,Patient")]
+    public async Task<IActionResult> GetFiles(long orderId)
+    {
+        var result = await _service.GetFilesByOrderIdAsync(orderId);
+        return Ok(result);
+    }
+
 }

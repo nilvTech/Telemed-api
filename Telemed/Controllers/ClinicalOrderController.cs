@@ -265,16 +265,6 @@ public class ClinicalOrderController : ControllerBase
         return NoContent();
     }
     // POST api/ClinicalOrder/{orderId}/upload-file
-    [HttpPost("{orderId}/upload-file")]
-    [Authorize(Roles = "Provider,Admin")]
-    [Consumes("multipart/form-data")]
-    public async Task<IActionResult> UploadFileForOrder(long orderId, IFormFile file)
-    {
-        if (file == null || file.Length == 0)
-            return BadRequest(new { error = "File not provided." });
-
-        var result = await _service.UploadOrderFileAsync(orderId, file);
-        return Ok(result);
-    }
+    
 
 }
