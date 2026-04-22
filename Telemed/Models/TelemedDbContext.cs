@@ -70,6 +70,9 @@ namespace Telemed.Models
 
         public virtual DbSet<Clinicalorder> Clinicalorders { get; set; }
 
+        public virtual DbSet<Followup> Followups { get; set; }
+
+
 
 
         // ====================== Keyless DTO for Patient Summary ======================
@@ -1696,10 +1699,42 @@ namespace Telemed.Models
                     .OnDelete(DeleteBehavior.Restrict)
                     .HasConstraintName("fk_clinicalorder_providerinfo");
 
-                // File Master
-
-
             });
+
+            // FollowUp
+
+            modelBuilder.Entity<Followup>(entity =>
+                {
+                    entity.HasKey(e => e.Followupid).HasName("followup_pkey");
+
+                    entity.ToTable("followup");
+
+                    entity.Property(e => e.Followupid).HasColumnName("followupid");
+                    entity.Property(e => e.Appointmentid).HasColumnName("appointmentid");
+                    entity.Property(e => e.Createdat)
+                        .HasDefaultValueSql("now()")
+                        .HasColumnName("createdat");
+                    entity.Property(e => e.Followupdate).HasColumnName("followupdate");
+                    entity.Property(e => e.Followuptype)
+                        .HasMaxLength(50)
+                        .HasColumnName("followuptype");
+                    entity.Property(e => e.Notes).HasColumnName("notes");
+                    entity.Property(e => e.Patientid).HasColumnName("patientid");
+                    entity.Property(e => e.Status)
+                        .HasMaxLength(20)
+                        .HasDefaultValueSql("'Scheduled'::character varying")
+                        .HasColumnName("status");
+
+                    entity.HasOne(d => d.Appointment).WithMany(p => p.Followups)
+                        .HasForeignKey(d => d.Appointmentid)
+                        .HasConstraintName("fk_followup_appointment");
+
+                    entity.HasOne(d => d.Patient).WithMany(p => p.Followups)
+                        .HasForeignKey(d => d.Patientid)
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("fk_followup_patient");
+                });
+
 
 
           OnModelCreatingPartial(modelBuilder);

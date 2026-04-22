@@ -192,6 +192,7 @@ builder.Services.AddScoped<IRpmmonitoringService, RpmmonitoringService>();
 builder.Services.AddScoped<ICareplanService, CareplanService>();
 builder.Services.AddScoped<ISmartgoalService, SmartgoalService>();
 builder.Services.AddScoped<IClinicalOrderService, ClinicalOrderService>();
+builder.Services.AddScoped<IFollowupService, FollowupService>();
 
 var app = builder.Build();
 

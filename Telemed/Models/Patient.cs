@@ -106,5 +106,8 @@ public partial class Patient
 
     public virtual ICollection<Clinicalorder> Clinicalorders { get; set; } = new List<Clinicalorder>();
 
+    public virtual ICollection<Followup> Followups { get; set; } = new List<Followup>();
+
+
 
 }
