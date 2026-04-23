@@ -72,6 +72,13 @@ namespace Telemed.Models
 
         public virtual DbSet<Followup> Followups { get; set; }
 
+        public virtual DbSet<Patientssummary> Patientssummaries { get; set; }
+
+        // Care Management Screen
+        public virtual DbSet<Carepatientsummary> Carepatientsummaries { get; set; }
+
+
+
 
 
 
@@ -812,6 +819,7 @@ namespace Telemed.Models
                 entity.HasNoKey();        // DTO has no primary key
                 entity.ToView(null);      // Not mapped to any table
             });
+
 
             //========== Filemaster===========================================================
 
@@ -1735,9 +1743,68 @@ namespace Telemed.Models
                         .HasConstraintName("fk_followup_patient");
                 });
 
+            //======PatientsSummary=============//
 
+            modelBuilder.Entity<Patientssummary>(entity =>
+            {
+                entity.HasNoKey();           // ✅ Required for views
+                entity.ToView("patientssummary");  // ✅ Maps to the DB view
 
-          OnModelCreatingPartial(modelBuilder);
+                entity.Property(e => e.Patientid).HasColumnName("patientid");
+                entity.Property(e => e.Firstname).HasColumnName("firstname");
+                entity.Property(e => e.Lastname).HasColumnName("lastname");
+                entity.Property(e => e.Gender).HasColumnName("gender");
+                entity.Property(e => e.Dateofbirth).HasColumnName("dateofbirth");
+                entity.Property(e => e.Conditions).HasColumnName("conditions");
+            });
+
+            // ============== Care Management Screen =================
+
+            modelBuilder.Entity<Carepatientsummary>(entity =>
+            {
+                entity.HasNoKey();
+                entity.ToView("carepatientsummary");
+
+                entity.Property(e => e.Patientid).HasColumnName("patientid");
+                entity.Property(e => e.Firstname).HasColumnName("firstname");
+                entity.Property(e => e.Lastname).HasColumnName("lastname");
+                entity.Property(e => e.Gender).HasColumnName("gender");
+                entity.Property(e => e.Dateofbirth).HasColumnName("dateofbirth");
+                entity.Property(e => e.Conditions).HasColumnName("conditions");
+
+                // RPM
+                entity.Property(e => e.LatestReadingdate).HasColumnName("latest_readingdate");
+                entity.Property(e => e.Systolic).HasColumnName("systolic");
+                entity.Property(e => e.Diastolic).HasColumnName("diastolic");
+                entity.Property(e => e.Heartrate).HasColumnName("heartrate");
+                entity.Property(e => e.Spo2).HasColumnName("spo2");
+                entity.Property(e => e.Glucose).HasColumnName("glucose");
+                entity.Property(e => e.Weight).HasColumnName("weight");
+
+                // Alert
+                entity.Property(e => e.Alerttype).HasColumnName("alerttype");
+
+                // Followup
+                entity.Property(e => e.Followuptype).HasColumnName("followuptype");
+                entity.Property(e => e.Followupdate).HasColumnName("followupdate");
+                entity.Property(e => e.FollowupStatus).HasColumnName("followup_status");
+
+                // Task
+                entity.Property(e => e.Taskname).HasColumnName("taskname");
+                entity.Property(e => e.Duedate).HasColumnName("duedate");
+                entity.Property(e => e.TaskStatus).HasColumnName("task_status");
+
+                // Careplan
+                entity.Property(e => e.CareplanStatus).HasColumnName("careplan_status");
+
+                // Smartgoal
+                entity.Property(e => e.Goaltitle).HasColumnName("goaltitle");
+                entity.Property(e => e.Progress).HasColumnName("progress");
+            });
+
+           
+
+            OnModelCreatingPartial(modelBuilder);
         }
             
 

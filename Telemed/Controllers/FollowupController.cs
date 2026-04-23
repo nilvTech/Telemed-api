@@ -116,7 +116,7 @@ public class FollowupController : ControllerBase
     // GET api/Followup/today
     [HttpGet("today")]
     [Authorize(Roles = "Admin,Provider")]
-    public async Task<IActionResult> GetToday()
+    public async Task<IActionResult> GetToday() 
     {
         var result = await _service.GetTodayAsync();
         return Ok(result);
