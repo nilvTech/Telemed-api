@@ -72,11 +72,14 @@ namespace Telemed.Models
 
         public virtual DbSet<Followup> Followups { get; set; }
 
+        // Patients Summary for Screen
         public virtual DbSet<Patientssummary> Patientssummaries { get; set; }
 
         // Care Management Screen
         public virtual DbSet<Carepatientsummary> Carepatientsummaries { get; set; }
 
+        // Care Team
+        public virtual DbSet<Careteam> Careteams { get; set; }
 
 
 
@@ -1743,12 +1746,12 @@ namespace Telemed.Models
                         .HasConstraintName("fk_followup_patient");
                 });
 
-            //======PatientsSummary=============//
+            //======== PatientsSummary for Screen ============//
 
             modelBuilder.Entity<Patientssummary>(entity =>
             {
-                entity.HasNoKey();           // ✅ Required for views
-                entity.ToView("patientssummary");  // ✅ Maps to the DB view
+                entity.HasNoKey();           //  Required for views
+                entity.ToView("patientssummary");  //  Maps to the DB view
 
                 entity.Property(e => e.Patientid).HasColumnName("patientid");
                 entity.Property(e => e.Firstname).HasColumnName("firstname");
@@ -1802,8 +1805,26 @@ namespace Telemed.Models
                 entity.Property(e => e.Progress).HasColumnName("progress");
             });
 
-           
+            // Care Team
 
+            modelBuilder.Entity<Careteam>(entity =>
+            {
+                entity.HasKey(e => e.Careteamid).HasName("careteam_pkey");
+
+                entity.ToTable("careteam");
+
+                entity.Property(e => e.Careteamid).HasColumnName("careteamid");
+                entity.Property(e => e.Createdat)
+                    .HasDefaultValueSql("now()")
+                    .HasColumnName("createdat");
+                entity.Property(e => e.Description).HasColumnName("description");
+                entity.Property(e => e.Teamname)
+                    .HasMaxLength(100)
+                    .HasColumnName("teamname");
+            });
+
+
+//==================================================================================//
             OnModelCreatingPartial(modelBuilder);
         }
             

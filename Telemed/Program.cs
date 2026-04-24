@@ -195,6 +195,7 @@ builder.Services.AddScoped<IClinicalOrderService, ClinicalOrderService>();
 builder.Services.AddScoped<IFollowupService, FollowupService>();
 builder.Services.AddScoped<IPatientsSummaryService, PatientsSummaryService>();
 builder.Services.AddScoped<ICarePatientsummaryService, CarePatientsummaryService>();
+builder.Services.AddScoped<ICareteamService, CareteamService>();
 
 var app = builder.Build();
 
