@@ -81,6 +81,9 @@ namespace Telemed.Models
         // Care Team
         public virtual DbSet<Careteam> Careteams { get; set; }
 
+        public virtual DbSet<Careteampatient> Careteampatients { get; set; }
+
+
 
 
 
@@ -1823,8 +1826,41 @@ namespace Telemed.Models
                     .HasColumnName("teamname");
             });
 
+            // Care Team Patient
 
-//==================================================================================//
+            modelBuilder.Entity<Careteampatient>(entity =>
+            {
+                entity.HasKey(e => e.Careteampatientid).HasName("careteampatient_pkey");
+
+                entity.ToTable("careteampatient");
+
+                entity.HasIndex(e => e.Careteamid, "idx_careteampatient_careteamid");
+
+                entity.HasIndex(e => e.Patientid, "idx_careteampatient_patientid");
+
+                entity.Property(e => e.Careteampatientid).HasColumnName("careteampatientid");
+                entity.Property(e => e.Assigneddate)
+                    .HasDefaultValueSql("now()")
+                    .HasColumnName("assigneddate");
+                entity.Property(e => e.Careteamid).HasColumnName("careteamid");
+                entity.Property(e => e.Isactive)
+                    .HasDefaultValue(true)
+                    .HasColumnName("isactive");
+                entity.Property(e => e.Patientid).HasColumnName("patientid");
+
+                entity.HasOne(d => d.Careteam).WithMany(p => p.Careteampatients)
+                    .HasForeignKey(d => d.Careteamid)
+                    .HasConstraintName("fk_ctp_careteam");
+
+                entity.HasOne(d => d.Patient).WithMany(p => p.Careteampatients)
+                    .HasForeignKey(d => d.Patientid)
+                    .HasConstraintName("fk_ctp_patient");
+            });
+
+
+
+
+            //==================================================================================//
             OnModelCreatingPartial(modelBuilder);
         }
             

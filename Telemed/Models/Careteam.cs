@@ -12,4 +12,7 @@ public partial class Careteam
     public string? Description { get; set; }
 
     public DateTime? Createdat { get; set; }
+
+    public virtual ICollection<Careteampatient> Careteampatients { get; set; } = new List<Careteampatient>();
+
 }
