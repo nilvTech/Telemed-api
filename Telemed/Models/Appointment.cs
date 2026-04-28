@@ -67,4 +67,7 @@ public partial class Appointment
 
     public virtual ICollection<Followup> Followups { get; set; } = new List<Followup>();
 
+    public virtual ICollection<Adminclaim> Adminclaims { get; set; } = new List<Adminclaim>();
+
+
 }

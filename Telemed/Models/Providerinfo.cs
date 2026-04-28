@@ -63,5 +63,8 @@ public partial class ProviderInfo
 
     public virtual ICollection<Clinicalorder> Clinicalorders { get; set; } = new List<Clinicalorder>();
 
+    public virtual ICollection<Adminclaim> Adminclaims { get; set; } = new List<Adminclaim>();
+
+
 
 }

@@ -83,6 +83,9 @@ namespace Telemed.Models
 
         public virtual DbSet<Careteampatient> Careteampatients { get; set; }
 
+        public virtual DbSet<Adminclaim> Adminclaims { get; set; }
+
+
 
 
 
@@ -1855,6 +1858,60 @@ namespace Telemed.Models
                 entity.HasOne(d => d.Patient).WithMany(p => p.Careteampatients)
                     .HasForeignKey(d => d.Patientid)
                     .HasConstraintName("fk_ctp_patient");
+            });
+
+            // Admin Cliam
+
+            modelBuilder.Entity<Adminclaim>(entity =>
+            {
+                entity.HasKey(e => e.Adminclaimid).HasName("adminclaim_pkey");
+
+                entity.ToTable("adminclaim");
+
+                entity.Property(e => e.Adminclaimid).HasColumnName("adminclaimid");
+                entity.Property(e => e.Appointmentid).HasColumnName("appointmentid");
+                entity.Property(e => e.Claimdate)
+                    .HasDefaultValueSql("now()")
+                    .HasColumnName("claimdate");
+                entity.Property(e => e.Claimid).HasColumnName("claimid");
+                entity.Property(e => e.Createdat)
+                    .HasDefaultValueSql("now()")
+                    .HasColumnName("createdat");
+                entity.Property(e => e.Encounterid).HasColumnName("encounterid");
+                entity.Property(e => e.Lastaction)
+                    .HasMaxLength(50)
+                    .HasColumnName("lastaction");
+                entity.Property(e => e.Lastactiondate).HasColumnName("lastactiondate");
+                entity.Property(e => e.Patientid).HasColumnName("patientid");
+                entity.Property(e => e.Providerinfoid).HasColumnName("providerinfoid");
+                entity.Property(e => e.Status)
+                    .HasMaxLength(50)
+                    .HasDefaultValueSql("'Submitted'::character varying")
+                    .HasColumnName("status");
+                entity.Property(e => e.Updatedat)
+                    .HasDefaultValueSql("now()")
+                    .HasColumnName("updatedat");
+
+                entity.HasOne(d => d.Appointment).WithMany(p => p.Adminclaims)
+                    .HasForeignKey(d => d.Appointmentid)
+                    .HasConstraintName("fk_adminclaim_appointment");
+
+                entity.HasOne(d => d.Claim).WithMany(p => p.Adminclaims)
+                    .HasForeignKey(d => d.Claimid)
+                    .HasConstraintName("fk_adminclaim_claim");
+
+                entity.HasOne(d => d.Encounter).WithMany(p => p.Adminclaims)
+                    .HasForeignKey(d => d.Encounterid)
+                    .HasConstraintName("fk_adminclaim_encounter");
+
+                entity.HasOne(d => d.Patient).WithMany(p => p.Adminclaims)
+                    .HasForeignKey(d => d.Patientid)
+                    .HasConstraintName("fk_adminclaim_patient");
+
+                entity.HasOne(d => d.Providerinfo).WithMany(p => p.Adminclaims)
+                    .HasForeignKey(d => d.Providerinfoid)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("fk_adminclaim_providerinfo");
             });
 
 

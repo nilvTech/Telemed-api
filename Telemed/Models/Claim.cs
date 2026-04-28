@@ -42,4 +42,7 @@ public partial class Claim
     public virtual ProviderInfo? Providerinfo { get; set; }
 
     public virtual ICollection<Claimdetail> Claimdetails { get; set; } = new List<Claimdetail>();
+
+    public virtual ICollection<Adminclaim> Adminclaims { get; set; } = new List<Adminclaim>();
+
 }

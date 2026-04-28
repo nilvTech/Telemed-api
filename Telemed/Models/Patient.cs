@@ -110,6 +110,9 @@ public partial class Patient
 
     public virtual ICollection<Careteampatient> Careteampatients { get; set; } = new List<Careteampatient>();
 
+    public virtual ICollection<Adminclaim> Adminclaims { get; set; } = new List<Adminclaim>();
+
+
 
 
 
