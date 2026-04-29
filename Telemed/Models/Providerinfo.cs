@@ -65,6 +65,9 @@ public partial class ProviderInfo
 
     public virtual ICollection<Adminclaim> Adminclaims { get; set; } = new List<Adminclaim>();
 
+    public virtual ICollection<Careteamprovider> Careteamproviders { get; set; } = new List<Careteamprovider>();
+
+
 
 
 }

@@ -198,6 +198,8 @@ builder.Services.AddScoped<ICarePatientsummaryService, CarePatientsummaryService
 builder.Services.AddScoped<ICareteamService, CareteamService>();
 builder.Services.AddScoped<ICareteampatientService, CareteampatientService>();
 builder.Services.AddScoped<IAdminclaimService, AdminclaimService>();
+builder.Services.AddScoped<ICareteamproviderService, CareteamproviderService>();
+builder.Services.AddScoped<IClaimformService, ClaimformService>();
 
 var app = builder.Build();
 

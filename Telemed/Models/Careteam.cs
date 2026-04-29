@@ -15,4 +15,7 @@ public partial class Careteam
 
     public virtual ICollection<Careteampatient> Careteampatients { get; set; } = new List<Careteampatient>();
 
+    public virtual ICollection<Careteamprovider> Careteamproviders { get; set; } = new List<Careteamprovider>();
+
+
 }

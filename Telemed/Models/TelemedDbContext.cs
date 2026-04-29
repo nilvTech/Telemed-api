@@ -83,7 +83,12 @@ namespace Telemed.Models
 
         public virtual DbSet<Careteampatient> Careteampatients { get; set; }
 
+        public virtual DbSet<Careteamprovider> Careteamproviders { get; set; }
+
+
         public virtual DbSet<Adminclaim> Adminclaims { get; set; }
+
+        public virtual DbSet<Claimform> Claimforms { get; set; }
 
 
 
@@ -1860,6 +1865,45 @@ namespace Telemed.Models
                     .HasConstraintName("fk_ctp_patient");
             });
 
+            // Care Team Provider
+
+            modelBuilder.Entity<Careteamprovider>(entity =>
+            {
+                entity.HasKey(e => e.Careteamproviderid).HasName("careteamprovider_pkey");
+
+                entity.ToTable("careteamprovider");
+
+                entity.HasIndex(e => e.Careteamid, "idx_careteamprovider_careteamid");
+
+                entity.HasIndex(e => e.Providerinfoid, "idx_careteamprovider_providerinfoid");
+
+                entity.Property(e => e.Careteamproviderid).HasColumnName("careteamproviderid");
+                entity.Property(e => e.Assigneddate)
+                    .HasDefaultValueSql("now()")
+                    .HasColumnName("assigneddate");
+                entity.Property(e => e.Careteamid).HasColumnName("careteamid");
+                entity.Property(e => e.Isactive)
+                    .HasDefaultValue(true)
+                    .HasColumnName("isactive");
+                entity.Property(e => e.Providerinfoid).HasColumnName("providerinfoid");
+                entity.Property(e => e.Role)
+                    .HasMaxLength(50)
+                    .HasColumnName("role");
+
+                entity.HasOne(d => d.Careteam).WithMany(p => p.Careteamproviders)
+                    .HasForeignKey(d => d.Careteamid)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("fk_ctp_careteam");
+
+                entity.HasOne(d => d.Providerinfo).WithMany(p => p.Careteamproviders)
+                    .HasForeignKey(d => d.Providerinfoid)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("fk_ctp_provider");
+            });
+
+
+
+
             // Admin Cliam
 
             modelBuilder.Entity<Adminclaim>(entity =>
@@ -1913,6 +1957,65 @@ namespace Telemed.Models
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("fk_adminclaim_providerinfo");
             });
+
+            // Claim Form
+
+            modelBuilder.Entity<Claimform>(entity =>
+            {
+                entity.HasKey(e => e.Claimformid).HasName("claimform_pkey");
+
+                entity.ToTable("claimform");
+
+                entity.Property(e => e.Claimformid).HasColumnName("claimformid");
+                entity.Property(e => e.Address)
+                    .HasMaxLength(300)
+                    .HasColumnName("address");
+                entity.Property(e => e.Createdat)
+                    .HasDefaultValueSql("now()")
+                    .HasColumnType("timestamp without time zone")
+                    .HasColumnName("createdat");
+                entity.Property(e => e.Createdby).HasColumnName("createdby");
+                entity.Property(e => e.Dateofbirth).HasColumnName("dateofbirth");
+                entity.Property(e => e.Dateofillness).HasColumnName("dateofillness");
+                entity.Property(e => e.Diagnosiscode)
+                    .HasMaxLength(50)
+                    .HasColumnName("diagnosiscode");
+                entity.Property(e => e.Gender)
+                    .HasMaxLength(20)
+                    .HasColumnName("gender");
+                entity.Property(e => e.Insuranceplan)
+                    .HasMaxLength(200)
+                    .HasColumnName("insuranceplan");
+                entity.Property(e => e.Insuredname)
+                    .HasMaxLength(200)
+                    .HasColumnName("insuredname");
+                entity.Property(e => e.Patientname)
+                    .HasMaxLength(200)
+                    .HasColumnName("patientname");
+                entity.Property(e => e.Phone)
+                    .HasMaxLength(20)
+                    .HasColumnName("phone");
+                entity.Property(e => e.Policynumber)
+                    .HasMaxLength(100)
+                    .HasColumnName("policynumber");
+                entity.Property(e => e.Referringprovider)
+                    .HasMaxLength(200)
+                    .HasColumnName("referringprovider");
+                entity.Property(e => e.Serviceamount)
+                    .HasPrecision(10, 2)
+                    .HasColumnName("serviceamount");
+                entity.Property(e => e.Servicecptcode)
+                    .HasMaxLength(50)
+                    .HasColumnName("servicecptcode");
+                entity.Property(e => e.Servicedate).HasColumnName("servicedate");
+                entity.Property(e => e.Servicedescription)
+                    .HasMaxLength(300)
+                    .HasColumnName("servicedescription");
+                entity.Property(e => e.Totalamount)
+                    .HasPrecision(10, 2)
+                    .HasColumnName("totalamount");
+            });
+
 
 
 
