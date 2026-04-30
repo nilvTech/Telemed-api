@@ -112,6 +112,9 @@ public partial class Patient
 
     public virtual ICollection<Adminclaim> Adminclaims { get; set; } = new List<Adminclaim>();
 
+    public virtual ICollection<Billingclaimsummary> Billingclaimsummaries { get; set; } = new List<Billingclaimsummary>();
+
+
 
 
 

@@ -200,6 +200,7 @@ builder.Services.AddScoped<ICareteampatientService, CareteampatientService>();
 builder.Services.AddScoped<IAdminclaimService, AdminclaimService>();
 builder.Services.AddScoped<ICareteamproviderService, CareteamproviderService>();
 builder.Services.AddScoped<IClaimformService, ClaimformService>();
+builder.Services.AddScoped<IBillingclaimsummaryService, BillingclaimsummaryService>();
 
 var app = builder.Build();
 

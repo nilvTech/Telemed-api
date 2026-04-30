@@ -90,6 +90,9 @@ namespace Telemed.Models
 
         public virtual DbSet<Claimform> Claimforms { get; set; }
 
+        public virtual DbSet<Billingclaimsummary> Billingclaimsummaries { get; set; }
+
+
 
 
 
@@ -2015,6 +2018,73 @@ namespace Telemed.Models
                     .HasPrecision(10, 2)
                     .HasColumnName("totalamount");
             });
+
+            // Billing Claim Summary
+
+            modelBuilder.Entity<Billingclaimsummary>(entity =>
+            {
+                entity.HasKey(e => e.Summaryid).HasName("billingclaimsummary_pkey");
+
+                entity.ToTable("billingclaimsummary");
+
+                entity.HasIndex(e => e.Claimdate, "idx_billing_claimdate");
+
+                entity.HasIndex(e => e.Claimid, "idx_billing_claimid");
+
+                entity.HasIndex(e => e.Cptcode, "idx_billing_cptcode");
+
+                entity.HasIndex(e => e.Patientid, "idx_billing_patientid");
+
+                entity.HasIndex(e => new { e.Providerinfoid, e.Status }, "idx_billing_provider_status");
+
+                entity.HasIndex(e => e.Providerinfoid, "idx_billing_providerinfoid");
+
+                entity.HasIndex(e => e.Status, "idx_billing_status");
+
+                entity.HasIndex(e => new { e.Status, e.Claimdate }, "idx_billing_status_date");
+
+                entity.Property(e => e.Summaryid).HasColumnName("summaryid");
+                entity.Property(e => e.Amount)
+                    .HasPrecision(10, 2)
+                    .HasColumnName("amount");
+                entity.Property(e => e.Claimdate)
+                    .HasColumnType("timestamp without time zone")
+                    .HasColumnName("claimdate");
+                entity.Property(e => e.Claimid).HasColumnName("claimid");
+                entity.Property(e => e.Cptcode)
+                    .HasMaxLength(20)
+                    .HasColumnName("cptcode");
+                entity.Property(e => e.Createdat)
+                    .HasDefaultValueSql("now()")
+                    .HasColumnType("timestamp without time zone")
+                    .HasColumnName("createdat");
+                entity.Property(e => e.Patientid).HasColumnName("patientid");
+                entity.Property(e => e.Providerinfoid).HasColumnName("providerinfoid");
+                entity.Property(e => e.Status)
+                    .HasMaxLength(50)
+                    .HasColumnName("status");
+                entity.Property(e => e.Updatedat)
+                    .HasDefaultValueSql("now()")
+                    .HasColumnType("timestamp without time zone")
+                    .HasColumnName("updatedat");
+
+                entity.HasOne(d => d.Claim).WithMany(p => p.Billingclaimsummaries)
+                    .HasForeignKey(d => d.Claimid)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("fk_billing_claim");
+
+                entity.HasOne(d => d.Patient).WithMany(p => p.Billingclaimsummaries)
+                    .HasForeignKey(d => d.Patientid)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("fk_billing_patient");
+
+                entity.HasOne(d => d.Providerinfo).WithMany(p => p.Billingclaimsummaries)
+                    .HasForeignKey(d => d.Providerinfoid)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("fk_billing_providerinfo");
+        });
+
+            // Billing claim View
 
 
 
