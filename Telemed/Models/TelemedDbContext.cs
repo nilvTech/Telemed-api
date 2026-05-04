@@ -92,6 +92,9 @@ namespace Telemed.Models
 
         public virtual DbSet<Billingclaimsummary> Billingclaimsummaries { get; set; }
 
+        public virtual DbSet<Role> Roles { get; set; }
+        public virtual DbSet<RolesDashboard> RolesDashboards { get; set; }
+
 
 
 
@@ -2085,6 +2088,76 @@ namespace Telemed.Models
         });
 
             // Billing claim View
+
+            // =============================Crete Role ===================================
+
+            // Role Table
+            modelBuilder.Entity<Role>(entity =>
+            {
+                entity.HasKey(e => e.Roleid).HasName("roles_pkey");
+                entity.ToTable("roles");
+
+                entity.HasIndex(e => e.Rolecode, "roles_rolecode_key").IsUnique();
+
+                entity.Property(e => e.Roleid).HasColumnName("roleid");
+                entity.Property(e => e.Rolename)
+                    .HasMaxLength(100)
+                    .HasColumnName("rolename");
+                entity.Property(e => e.Rolecode)
+                    .HasMaxLength(50)
+                    .HasColumnName("rolecode");
+                entity.Property(e => e.Roletype)
+                    .HasMaxLength(50)
+                    .HasColumnName("roletype");
+                entity.Property(e => e.Accesslevel)
+                    .HasMaxLength(50)
+                    .HasColumnName("accesslevel");
+                entity.Property(e => e.Status)
+                    .HasMaxLength(20)
+                    .HasDefaultValueSql("'Active'::character varying")
+                    .HasColumnName("status");
+                entity.Property(e => e.Defaultlandingpage)
+                    .HasMaxLength(200)
+                    .HasColumnName("defaultlandingpage");
+                entity.Property(e => e.Datascope)
+                    .HasMaxLength(50)
+                    .HasColumnName("datascope");
+                entity.Property(e => e.Requiresmfa)
+                    .HasDefaultValue(false)
+                    .HasColumnName("requiresmfa");
+                entity.Property(e => e.Description).HasColumnName("description");
+                entity.Property(e => e.Createdby).HasColumnName("createdby");
+                entity.Property(e => e.Createdat)
+                    .HasDefaultValueSql("now()")
+                    .HasColumnName("createdat");
+                entity.Property(e => e.Updatedby).HasColumnName("updatedby");
+                entity.Property(e => e.Updatedat)
+                    .HasDefaultValueSql("now()")
+                    .HasColumnName("updatedat");
+            });
+
+            // Roles Dashboard VIEW — Keyless
+            modelBuilder.Entity<RolesDashboard>(entity =>
+            {
+                entity.HasNoKey();
+                entity.ToView("roles_dashboard");
+
+                entity.Property(e => e.Roleid).HasColumnName("roleid");
+                entity.Property(e => e.Rolename).HasColumnName("rolename");
+                entity.Property(e => e.Rolecode).HasColumnName("rolecode");
+                entity.Property(e => e.Roletype).HasColumnName("roletype");
+                entity.Property(e => e.Accesslevel).HasColumnName("accesslevel");
+                entity.Property(e => e.Status).HasColumnName("status");
+                entity.Property(e => e.Defaultlandingpage).HasColumnName("defaultlandingpage");
+                entity.Property(e => e.Datascope).HasColumnName("datascope");
+                entity.Property(e => e.Requiresmfa).HasColumnName("requiresmfa");
+                entity.Property(e => e.Description).HasColumnName("description");
+                entity.Property(e => e.Userscount).HasColumnName("userscount");
+                entity.Property(e => e.Createdby).HasColumnName("createdby");
+                entity.Property(e => e.Createdat).HasColumnName("createdat");
+                entity.Property(e => e.Updatedby).HasColumnName("updatedby");
+                entity.Property(e => e.Updatedat).HasColumnName("updatedat");
+            });
 
 
 
