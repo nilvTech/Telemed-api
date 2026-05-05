@@ -10,6 +10,8 @@ using Telemed.Models;
 using Telemed.Services;
 using Telemed.Services.Interfaces;
 
+   
+
 var builder = WebApplication.CreateBuilder(args);
 
 // PostgreSQL timestamp behavior

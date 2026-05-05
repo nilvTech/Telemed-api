@@ -14,7 +14,7 @@ public partial class Videosession
     public long Patientid { get; set; }
 
     public DateTime? Starttime { get; set; }
-
+    
     public DateTime? Endtime { get; set; }
 
     public string? Callstatus { get; set; }
