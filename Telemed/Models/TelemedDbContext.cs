@@ -95,6 +95,9 @@ namespace Telemed.Models
         public virtual DbSet<Role> Roles { get; set; }
         public virtual DbSet<RolesDashboard> RolesDashboards { get; set; }
 
+        public virtual DbSet<PatientDashboard> PatientDashboards { get; set; }
+
+
 
 
 
@@ -2159,6 +2162,87 @@ namespace Telemed.Models
                 entity.Property(e => e.Updatedat).HasColumnName("updatedat");
             });
 
+
+
+            // Patient Dashboard  //
+
+            modelBuilder.Entity<PatientDashboard>(entity =>
+            {
+                entity
+                    .HasNoKey()
+                    .ToView("patient_dashboard");
+
+                entity.Property(e => e.Appointmentdate).HasColumnName("appointmentdate");
+                entity.Property(e => e.Appointmentid).HasColumnName("appointmentid");
+                entity.Property(e => e.Appointmentstarttime).HasColumnName("appointmentstarttime");
+                entity.Property(e => e.Appointmentstatus)
+                    .HasMaxLength(50)
+                    .HasColumnName("appointmentstatus");
+                entity.Property(e => e.Billingstatus)
+                    .HasMaxLength(30)
+                    .HasColumnName("billingstatus");
+                entity.Property(e => e.Callstatus)
+                    .HasMaxLength(20)
+                    .HasColumnName("callstatus");
+                entity.Property(e => e.Claimid).HasColumnName("claimid");
+                entity.Property(e => e.Claimnumber)
+                    .HasMaxLength(50)
+                    .HasColumnName("claimnumber");
+                entity.Property(e => e.Dateofbirth).HasColumnName("dateofbirth");
+                entity.Property(e => e.Diastolic).HasColumnName("diastolic");
+                entity.Property(e => e.Doctorname).HasColumnName("doctorname");
+                entity.Property(e => e.Encounterdate)
+                    .HasColumnType("timestamp without time zone")
+                    .HasColumnName("encounterdate");
+                entity.Property(e => e.Encounterid).HasColumnName("encounterid");
+                entity.Property(e => e.Encounternotes).HasColumnName("encounternotes");
+                entity.Property(e => e.Endtime)
+                    .HasColumnType("timestamp without time zone")
+                    .HasColumnName("endtime");
+                entity.Property(e => e.Gender).HasColumnName("gender");
+                entity.Property(e => e.Glucose).HasColumnName("glucose");
+                entity.Property(e => e.Heartrate).HasColumnName("heartrate");
+                entity.Property(e => e.Mrn)
+                    .HasMaxLength(50)
+                    .HasColumnName("mrn");
+                entity.Property(e => e.Notificationdate)
+                    .HasColumnType("timestamp without time zone")
+                    .HasColumnName("notificationdate");
+                entity.Property(e => e.Notificationid).HasColumnName("notificationid");
+                entity.Property(e => e.Notificationmessage).HasColumnName("notificationmessage");
+                entity.Property(e => e.Paidamount)
+                    .HasPrecision(12, 2)
+                    .HasColumnName("paidamount");
+                entity.Property(e => e.Patientid).HasColumnName("patientid");
+                entity.Property(e => e.Patientname).HasColumnName("patientname");
+                entity.Property(e => e.Payer)
+                    .HasMaxLength(100)
+                    .HasColumnName("payer");
+                entity.Property(e => e.Providerid).HasColumnName("providerid");
+                entity.Property(e => e.Readingdate).HasColumnName("readingdate");
+                entity.Property(e => e.Recordingurl).HasColumnName("recordingurl");
+                entity.Property(e => e.Speciality)
+                    .HasMaxLength(150)
+                    .HasColumnName("speciality");
+                entity.Property(e => e.Spo2).HasColumnName("spo2");
+                entity.Property(e => e.Starttime)
+                    .HasColumnType("timestamp without time zone")
+                    .HasColumnName("starttime");
+                entity.Property(e => e.Systolic).HasColumnName("systolic");
+                entity.Property(e => e.Temperature)
+                    .HasPrecision(5, 2)
+                    .HasColumnName("temperature");
+                entity.Property(e => e.Totalamount)
+                    .HasPrecision(12, 2)
+                    .HasColumnName("totalamount");
+                entity.Property(e => e.Videosessionid).HasColumnName("videosessionid");
+                entity.Property(e => e.Visittype)
+                    .HasMaxLength(50)
+                    .HasColumnName("visittype");
+                entity.Property(e => e.Weight)
+                    .HasPrecision(6, 2)
+                    .HasColumnName("weight");
+            });
 
 
 
