@@ -205,6 +205,7 @@ builder.Services.AddScoped<IClaimformService, ClaimformService>();
 builder.Services.AddScoped<IBillingclaimsummaryService, BillingclaimsummaryService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IPatientDashboardService, PatientDashboardService>();
+builder.Services.AddScoped<IPatientAppointmentDashboardService,PatientAppointmentDashboardService>();
 
 var app = builder.Build();
 

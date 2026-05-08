@@ -97,6 +97,9 @@ namespace Telemed.Models
 
         public virtual DbSet<PatientDashboard> PatientDashboards { get; set; }
 
+        public virtual DbSet<PatientAppointmentDashboard> PatientAppointmentDashboards { get; set; }
+
+
 
 
 
@@ -2242,6 +2245,78 @@ namespace Telemed.Models
                 entity.Property(e => e.Weight)
                     .HasPrecision(6, 2)
                     .HasColumnName("weight");
+            });
+
+            // Patient Appointment Dashboard //
+
+            modelBuilder.Entity<PatientAppointmentDashboard>(entity =>
+            {
+                entity
+                    .HasNoKey()
+                    .ToView("patient_appointment_dashboard");
+
+                entity.Property(e => e.Age).HasColumnName("age");
+                entity.Property(e => e.Appointmentdate).HasColumnName("appointmentdate");
+                entity.Property(e => e.Appointmentid).HasColumnName("appointmentid");
+                entity.Property(e => e.Appointmentstatus)
+                    .HasMaxLength(50)
+                    .HasColumnName("appointmentstatus");
+                entity.Property(e => e.Cancancel).HasColumnName("cancancel");
+                entity.Property(e => e.Canjoincall).HasColumnName("canjoincall");
+                entity.Property(e => e.Canreschedule).HasColumnName("canreschedule");
+                entity.Property(e => e.Createddate)
+                    .HasColumnType("timestamp without time zone")
+                    .HasColumnName("createddate");
+                entity.Property(e => e.Durationseconds).HasColumnName("durationseconds");
+                entity.Property(e => e.Endtime).HasColumnName("endtime");
+                entity.Property(e => e.Gender).HasColumnName("gender");
+                entity.Property(e => e.Ispaid).HasColumnName("ispaid");
+                entity.Property(e => e.Meetingid)
+                    .HasMaxLength(100)
+                    .HasColumnName("meetingid");
+                entity.Property(e => e.Meetinglink)
+                    .HasMaxLength(500)
+                    .HasColumnName("meetinglink");
+                entity.Property(e => e.Mrn)
+                    .HasMaxLength(50)
+                    .HasColumnName("mrn");
+                entity.Property(e => e.Patientid).HasColumnName("patientid");
+                entity.Property(e => e.Patientname).HasColumnName("patientname");
+                entity.Property(e => e.Paymentid).HasColumnName("paymentid");
+                entity.Property(e => e.Providerid).HasColumnName("providerid");
+                entity.Property(e => e.Providername)
+                    .HasMaxLength(150)
+                    .HasColumnName("providername");
+                entity.Property(e => e.Recordingurl).HasColumnName("recordingurl");
+                entity.Property(e => e.Speciality)
+                    .HasMaxLength(150)
+                    .HasColumnName("speciality");
+                entity.Property(e => e.Starttime).HasColumnName("starttime");
+                entity.Property(e => e.Updateddate)
+                    .HasColumnType("timestamp without time zone")
+                    .HasColumnName("updateddate");
+                entity.Property(e => e.Videocallstatus)
+                    .HasMaxLength(20)
+                    .HasColumnName("videocallstatus");
+                entity.Property(e => e.Videoendtime)
+                    .HasColumnType("timestamp without time zone")
+                    .HasColumnName("videoendtime");
+                entity.Property(e => e.Videoname)
+                    .HasMaxLength(255)
+                    .HasColumnName("videoname");
+                entity.Property(e => e.Videosessionid).HasColumnName("videosessionid");
+                entity.Property(e => e.Videostarttime)
+                    .HasColumnType("timestamp without time zone")
+                    .HasColumnName("videostarttime");
+                entity.Property(e => e.Visitmode)
+                    .HasMaxLength(50)
+                    .HasColumnName("visitmode");
+                entity.Property(e => e.Visitreason)
+                    .HasMaxLength(255)
+                    .HasColumnName("visitreason");
+                entity.Property(e => e.Visittype)
+                    .HasMaxLength(50)
+                    .HasColumnName("visittype");
             });
 
 
