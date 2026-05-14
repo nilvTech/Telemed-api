@@ -206,6 +206,7 @@ builder.Services.AddScoped<IBillingclaimsummaryService, BillingclaimsummaryServi
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IPatientDashboardService, PatientDashboardService>();
 builder.Services.AddScoped<IPatientAppointmentDashboardService,PatientAppointmentDashboardService>();
+builder.Services.AddScoped<IProviderDashboardService, ProviderDashboardService>(); // Provider Dashboard
 
 var app = builder.Build();
 
